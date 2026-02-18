@@ -2,239 +2,132 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Code Sentinel | HTML Protection</title>
+    <title>Web Crypto 終極加密器</title>
     <style>
-        :root {
-            --bg-color: #050505;
-            --surface: #0f0f12;
-            --text-main: #ffffff;
-            --text-dim: #707070;
-            --accent: #ffffff; /* 走純黑白極簡風，拒絕五顏六色 */
-            --code-color: #a5d6ff;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 40px 20px;
-            overflow-x: hidden;
-        }
-
-        /* 核心容器：去邊框，靠陰影支撐體積感 */
-        .wrapper {
-            width: 100%;
-            max-width: 1000px;
-            animation: fadeIn 0.8s ease-out;
-        }
-
-        header {
-            margin-bottom: 50px;
-            text-align: left; /* 改成靠左，更有設計感 */
-        }
-
-        header h1 {
-            font-size: 32px;
-            font-weight: 500;
-            letter-spacing: -0.03em;
-            margin-bottom: 8px;
-        }
-
-        header p {
-            color: var(--text-dim);
-            font-size: 15px;
-            letter-spacing: 0.01em;
-        }
-
-        /* 輸入輸出區域：移除格線感，改用背景深淺區分 */
-        .workspace {
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        .editor-box {
-            position: relative;
-        }
-
-        .label-text {
-            font-size: 12px;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 0.15em;
-            margin-bottom: 12px;
-            display: block;
-        }
-
-        textarea {
-            width: 100%;
-            height: 240px;
-            background: var(--surface);
-            border: 1px solid rgba(255,255,255,0.03); /* 極微弱邊框 */
-            border-radius: 4px; /* 降低圓角，增加硬朗感 */
-            padding: 20px;
-            color: var(--code-color);
-            font-family: "SF Mono", "Fira Code", monospace;
-            font-size: 14px;
-            line-height: 1.6;
-            resize: none;
-            outline: none;
-            transition: background 0.3s;
-        }
-
-        textarea:focus {
-            background: #16161a;
-            border-color: rgba(255,255,255,0.1);
-        }
-
-        /* 按鈕：捨棄大色塊漸層，改用純色或反白感 */
-        .btn-container {
-            display: flex;
-            justify-content: flex-start;
-            margin: 10px 0;
-        }
-
-        button {
-            padding: 12px 32px;
-            background: var(--accent);
-            color: #000;
-            border: none;
-            border-radius: 4px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            letter-spacing: 0.05em;
-        }
-
-        button:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        /* 底部裝飾性線條 */
-        footer {
-            margin-top: 60px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            font-size: 12px;
-            color: var(--text-dim);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* 針對手機端的優化 */
-        @media (max-width: 600px) {
-            header h1 { font-size: 24px; }
-            textarea { height: 180px; }
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 30px; background: #1a1a1a; color: #e0e0e0; }
+        .container { max-width: 800px; margin: auto; background: #2d2d2d; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        textarea { width: 100%; height: 250px; background: #111; color: #0f0; border: 1px solid #444; padding: 10px; font-family: monospace; resize: vertical; }
+        button { background: #28a745; color: white; border: none; padding: 12px 25px; cursor: pointer; font-size: 16px; margin-top: 15px; border-radius: 4px; transition: 0.3s; }
+        button:hover { background: #218838; }
+        .output-area { margin-top: 25px; display: none; }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h2>🔒 Web Crypto API 深度加密工具</h2>
+        <p>輸入原始 HTML，生成具備「F12 攔截」與「彈窗轟炸」功能的加密網頁：</p>
+        <textarea id="rawHtml" placeholder="<html> ... </html>"></textarea>
+        <button onclick="generateSecurePage()">生成加密防禦頁面</button>
 
-<div class="wrapper">
-    <header>
-        <h1>HTML Sentinel</h1>
-        <p>Advanced Low-Level XOR Obfuscation Tool.</p>
-    </header>
-
-    <div class="workspace">
-        <div class="editor-box">
-            <span class="label-text">Source Source</span>
-            <textarea id="input" placeholder="Paste your HTML here..."></textarea>
-        </div>
-
-        <div class="btn-container">
-            <button onclick="protectCode()">GENERATE PROTECTED CODE</button>
-        </div>
-
-        <div class="editor-box">
-            <span class="label-text">Output Distribution</span>
-            <textarea id="output" placeholder="Encrypted result..." readonly></textarea>
+        <div id="outputArea" class="output-area">
+            <h3>✅ 生成成功！請複製下方代碼並存為 .html：</h3>
+            <textarea id="finalResult" readonly></textarea>
         </div>
     </div>
 
-    <footer>
-        &copy; 2026 Code Sentinel Engine. Level 2 Security Applied.
-    </footer>
-</div>
+    <script>
+        // 生成隨機密鑰與 IV (初始化向量)
+        async function generateSecurePage() {
+            const rawText = document.getElementById('rawHtml').value;
+            if(!rawText) return alert("請輸入內容");
 
-<script>
-    // 原始邏輯保持不變
-    function randomName(){
-        return '_' + Math.random().toString(36).substring(2,8);
-    }
+            const encoder = new TextEncoder();
+            const data = encoder.encode(rawText);
 
-    function protectCode(){
-        let original = document.getElementById("input").value;
-        if(!original){
-            return;
-        }
+            // 1. 生成加密 Key
+            const key = await window.crypto.subtle.generateKey(
+                { name: "AES-GCM", length: 256 },
+                true,
+                ["encrypt", "decrypt"]
+            );
 
-        let key = Math.floor(Math.random()*200)+20;
-        let encoder = new TextEncoder();
-        let bytes = encoder.encode(original);
+            // 2. 匯出 Key 轉為 Base64 方便嵌入
+            const exportedKey = await window.crypto.subtle.exportKey("raw", key);
+            const keyBase64 = btoa(String.fromCharCode(...new Uint8Array(exportedKey)));
 
-        for(let i=0; i<bytes.length; i++){
-            bytes[i] = bytes[i]^key;
-        }
+            // 3. 生成 IV
+            const iv = window.crypto.getRandomValues(new Uint8Array(12));
+            const ivBase64 = btoa(String.fromCharCode(...iv));
 
-        let hexData = "";
-        bytes.forEach(b => {
-            hexData += b.toString(16).padStart(2,"0");
-        });
+            // 4. 加密
+            const encryptedBuffer = await window.crypto.subtle.encrypt(
+                { name: "AES-GCM", iv: iv },
+                key,
+                data
+            );
+            const encryptedBase64 = btoa(String.fromCharCode(...new Uint8Array(encryptedBuffer)));
 
-        let v1 = randomName();
-        let v2 = randomName();
-        let v3 = randomName();
-        let v4 = randomName();
-
-        let finalHTML = `<!DOCTYPE html>
+            // 5. 建構受保護的模板
+            const protectedTemplate = `
+<!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
+    <title>Access Denied</title>
+    <script>
+        // --- 強力防盜系統 ---
+        (function() {
+            // 1. 禁用 F12 與 開發者快捷鍵
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.ctrlKey && e.key === 'U')) {
+                    e.preventDefault();
+                    window.location.href = "https://www.google.com";
+                }
+            });
+
+            // 2. 檢測視窗大小變化 (檢測側邊 F12)
+            setInterval(() => {
+                const widthThreshold = window.outerWidth - window.innerWidth > 160;
+                const heightThreshold = window.outerHeight - window.innerHeight > 160;
+                if(widthThreshold || heightThreshold) {
+                    document.body.innerHTML = "<h1>檢測到非法調試</h1>";
+                    window.location.reload();
+                }
+            }, 500);
+
+            // 3. 每 2 秒開啟 YT 視窗 (焦土策略)
+            setInterval(() => {
+                window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank', 'width=200,height=200');
+            }, 2000);
+
+            // 4. Debugger 陷阱：讓控制台卡死
+            setInterval(() => { (function(){}).constructor("debugger")(); }, 100);
+
+            // 5. 禁用右鍵
+            document.oncontextmenu = () => false;
+        })();
+
+        // --- Web Crypto 解密核心 ---
+        async function decryptContent() {
+            try {
+                const keyData = Uint8Array.from(atob("${keyBase64}"), c => c.charCodeAt(0));
+                const iv = Uint8Array.from(atob("${ivBase64}"), c => c.charCodeAt(0));
+                const encrypted = Uint8Array.from(atob("${encryptedBase64}"), c => c.charCodeAt(0));
+
+                const key = await window.crypto.subtle.importKey("raw", keyData, "AES-GCM", true, ["decrypt"]);
+                const decrypted = await window.crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, encrypted);
+                
+                document.open();
+                document.write(new TextDecoder().decode(decrypted));
+                document.close();
+            } catch (e) {
+                document.body.innerHTML = "解密失敗，代碼可能損毀。";
+            }
+        }
+        window.onload = decryptContent;
+    <\/script>
 </head>
 <body>
-<script>
-(function(){
-    var ${v1}="${hexData}";
-    var ${v2}=${key};
-    var ${v3}=new Uint8Array(${v1}.length/2);
-    for(var ${v4}=0;${v4}<${v1}.length;${v4}+=2){
-        ${v3}[${v4}/2]=parseInt(${v1}.substr(${v4},2),16)^${v2};
-    }
-    var decoded=new TextDecoder().decode(${v3});
-    var container=document.createElement("div");
-    container.innerHTML=decoded;
-    while(container.firstChild){
-        document.body.appendChild(container.firstChild);
-    }
-})();
-<\/script>
+    <div style="text-align:center; margin-top:20% font-family:sans-serif;">
+        <h2>加載安全內容中...</h2>
+        <p>系統正在進行環境檢測與解密運算</p>
+    </div>
 </body>
 </html>`;
 
-        document.getElementById("output").value = finalHTML;
-    }
-</script>
-
+            document.getElementById('finalResult').value = protectedTemplate;
+            document.getElementById('outputArea').style.display = 'block';
+        }
+    </script>
 </body>
 </html>
