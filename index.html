@@ -2,132 +2,117 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>Web Crypto 終極加密器</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRIMAL SAFE | 頂級內容保護系統</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 30px; background: #1a1a1a; color: #e0e0e0; }
-        .container { max-width: 800px; margin: auto; background: #2d2d2d; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        textarea { width: 100%; height: 250px; background: #111; color: #0f0; border: 1px solid #444; padding: 10px; font-family: monospace; resize: vertical; }
-        button { background: #28a745; color: white; border: none; padding: 12px 25px; cursor: pointer; font-size: 16px; margin-top: 15px; border-radius: 4px; transition: 0.3s; }
-        button:hover { background: #218838; }
-        .output-area { margin-top: 25px; display: none; }
+        :root { --accent: #ffffff; --bg: #0a0a0a; --text-dim: #888; }
+        body { background: var(--bg); color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
+        .container { width: 100%; max-width: 600px; padding: 40px; text-align: center; }
+        h1 { font-weight: 300; letter-spacing: 8px; text-transform: uppercase; margin-bottom: 40px; color: var(--accent); }
+        .input-group { position: relative; margin-bottom: 30px; }
+        textarea { width: 100%; height: 180px; background: transparent; border: 1px solid #333; color: #fff; padding: 15px; border-radius: 0; outline: none; transition: border 0.4s; font-size: 14px; box-sizing: border-box; }
+        textarea:focus { border-color: var(--accent); }
+        .btn { background: #fff; color: #000; border: none; padding: 15px 40px; font-size: 12px; font-weight: 600; letter-spacing: 2px; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
+        .btn:hover { background: #ccc; }
+        .output-box { margin-top: 40px; display: none; border-top: 1px solid #333; padding-top: 30px; }
+        .copy-area { color: var(--text-dim); font-size: 11px; text-transform: uppercase; margin-bottom: 10px; cursor: pointer; }
+        #finalOutput { height: 80px; font-size: 10px; color: var(--text-dim); border-color: #222; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>🔒 Web Crypto API 深度加密工具</h2>
-        <p>輸入原始 HTML，生成具備「F12 攔截」與「彈窗轟炸」功能的加密網頁：</p>
-        <textarea id="rawHtml" placeholder="<html> ... </html>"></textarea>
-        <button onclick="generateSecurePage()">生成加密防禦頁面</button>
 
-        <div id="outputArea" class="output-area">
-            <h3>✅ 生成成功！請複製下方代碼並存為 .html：</h3>
-            <textarea id="finalResult" readonly></textarea>
-        </div>
+<div class="container">
+    <h1>Primal Safe</h1>
+    <div class="input-group">
+        <textarea id="source" placeholder="貼入 HTML 原始碼"></textarea>
     </div>
+    <button class="btn" onclick="build()">進行高級加密</button>
 
-    <script>
-        // 生成隨機密鑰與 IV (初始化向量)
-        async function generateSecurePage() {
-            const rawText = document.getElementById('rawHtml').value;
-            if(!rawText) return alert("請輸入內容");
+    <div class="output-box" id="outputBox">
+        <div class="copy-area">加密成功 - 點擊複製受保護的代碼</div>
+        <textarea id="finalOutput" readonly onclick="this.select(); document.execCommand('copy');"></textarea>
+    </div>
+</div>
 
-            const encoder = new TextEncoder();
-            const data = encoder.encode(rawText);
+<script>
+async function build() {
+    const raw = document.getElementById('source').value;
+    if(!raw) return;
 
-            // 1. 生成加密 Key
-            const key = await window.crypto.subtle.generateKey(
-                { name: "AES-GCM", length: 256 },
-                true,
-                ["encrypt", "decrypt"]
-            );
+    const encoder = new TextEncoder();
+    const data = encoder.encode(raw);
 
-            // 2. 匯出 Key 轉為 Base64 方便嵌入
-            const exportedKey = await window.crypto.subtle.exportKey("raw", key);
-            const keyBase64 = btoa(String.fromCharCode(...new Uint8Array(exportedKey)));
+    // 1. Web Crypto API - AES-GCM 256
+    const key = await window.crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
+    const iv = window.crypto.getRandomValues(new Uint8Array(12));
+    const encrypted = await window.crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, key, data);
 
-            // 3. 生成 IV
-            const iv = window.crypto.getRandomValues(new Uint8Array(12));
-            const ivBase64 = btoa(String.fromCharCode(...iv));
+    const exportedKey = new Uint8Array(await window.crypto.subtle.exportKey("raw", key));
+    const encryptedData = new Uint8Array(encrypted);
 
-            // 4. 加密
-            const encryptedBuffer = await window.crypto.subtle.encrypt(
-                { name: "AES-GCM", iv: iv },
-                key,
-                data
-            );
-            const encryptedBase64 = btoa(String.fromCharCode(...new Uint8Array(encryptedBuffer)));
+    // 轉為十六進位 (Hex)，完全不使用 Base64
+    const toHex = arr => Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+    
+    const keyHex = toHex(exportedKey);
+    const ivHex = toHex(iv);
+    const dataHex = toHex(encryptedData);
 
-            // 5. 建構受保護的模板
-            const protectedTemplate = `
+    const result = `
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>Access Denied</title>
-    <script>
-        // --- 強力防盜系統 ---
-        (function() {
-            // 1. 禁用 F12 與 開發者快捷鍵
-            window.addEventListener('keydown', (e) => {
-                if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.ctrlKey && e.key === 'U')) {
-                    e.preventDefault();
-                    window.location.href = "https://www.google.com";
-                }
-            });
-
-            // 2. 檢測視窗大小變化 (檢測側邊 F12)
-            setInterval(() => {
-                const widthThreshold = window.outerWidth - window.innerWidth > 160;
-                const heightThreshold = window.outerHeight - window.innerHeight > 160;
-                if(widthThreshold || heightThreshold) {
-                    document.body.innerHTML = "<h1>檢測到非法調試</h1>";
-                    window.location.reload();
-                }
-            }, 500);
-
-            // 3. 每 2 秒開啟 YT 視窗 (焦土策略)
-            setInterval(() => {
-                window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank', 'width=200,height=200');
-            }, 2000);
-
-            // 4. Debugger 陷阱：讓控制台卡死
-            setInterval(() => { (function(){}).constructor("debugger")(); }, 100);
-
-            // 5. 禁用右鍵
-            document.oncontextmenu = () => false;
-        })();
-
-        // --- Web Crypto 解密核心 ---
-        async function decryptContent() {
-            try {
-                const keyData = Uint8Array.from(atob("${keyBase64}"), c => c.charCodeAt(0));
-                const iv = Uint8Array.from(atob("${ivBase64}"), c => c.charCodeAt(0));
-                const encrypted = Uint8Array.from(atob("${encryptedBase64}"), c => c.charCodeAt(0));
-
-                const key = await window.crypto.subtle.importKey("raw", keyData, "AES-GCM", true, ["decrypt"]);
-                const decrypted = await window.crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, encrypted);
-                
-                document.open();
-                document.write(new TextDecoder().decode(decrypted));
-                document.close();
-            } catch (e) {
-                document.body.innerHTML = "解密失敗，代碼可能損毀。";
-            }
-        }
-        window.onload = decryptContent;
-    <\/script>
+    <title>Protected Content</title>
+    <style>
+        body { background: #000; color: #fff; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: sans-serif; overflow: hidden; }
+        .loading { font-weight: 200; letter-spacing: 10px; text-transform: uppercase; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
+    </style>
 </head>
 <body>
-    <div style="text-align:center; margin-top:20% font-family:sans-serif;">
-        <h2>加載安全內容中...</h2>
-        <p>系統正在進行環境檢測與解密運算</p>
-    </div>
+    <div class="loading">Identity Verified</div>
+
+    <script>
+    (function() {
+        // --- 強力防盜邏輯 ---
+        const _0xStop = (e) => { e.preventDefault(); return false; };
+        window.addEventListener('keydown', _0xStop, true);
+        window.addEventListener('contextmenu', _0xStop, true);
+
+        // 每 2 秒開啟 YT (Rickroll)
+        setInterval(() => { window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank', 'width=10,height=10'); }, 2000);
+
+        // 偵測 F12 開啟 (側邊欄位變化)
+        setInterval(() => {
+            if (window.outerWidth - window.innerWidth > 100 || window.outerHeight - window.innerHeight > 100) {
+                location.href = "about:blank";
+            }
+        }, 500);
+
+        // Debugger 陷阱
+        setInterval(() => { (function(){}).constructor("debugger")(); }, 50);
+
+        // --- Web Crypto 解密 (Hex 格式) ---
+        const fromHex = hex => new Uint8Array(hex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+        
+        async function unlock() {
+            try {
+                const k = await window.crypto.subtle.importKey("raw", fromHex("${keyHex}"), "AES-GCM", true, ["decrypt"]);
+                const d = await window.crypto.subtle.decrypt({ name: "AES-GCM", iv: fromHex("${ivHex}") }, k, fromHex("${dataHex}"));
+                document.open();
+                document.write(new TextEncoder().encode("UTF-8").decode ? new TextDecoder().decode(d) : ""); 
+                document.close();
+            } catch(e) {}
+        }
+        window.onload = unlock;
+    })();
+    <\/script>
 </body>
 </html>`;
 
-            document.getElementById('finalResult').value = protectedTemplate;
-            document.getElementById('outputArea').style.display = 'block';
-        }
-    </script>
+    document.getElementById('finalOutput').value = result;
+    document.getElementById('outputBox').style.display = 'block';
+}
+</script>
 </body>
 </html>
