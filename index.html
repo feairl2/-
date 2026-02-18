@@ -3,310 +3,349 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CORE SECURE | System Defense Console</title>
+    <title>CYBERSHIELD | INDUSTRIAL CODE PROTECTION MATRIX</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@300;400;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;700&family=JetBrains+Mono:wght@300;500&display=swap');
         
-        :root { 
-            --gold: #d4af37; 
-            --bg: #050505; 
-            --card: #0f0f0f; 
-            --danger: #ff3e3e;
-            --success: #00ff41;
+        :root {
+            --primary: #ffffff;
+            --accent: #ff0000;
+            --bg-dark: #050505;
+            --panel-bg: #0a0a0a;
+            --border: rgba(255, 255, 255, 0.1);
         }
 
-        * { box-sizing: border-box; }
-        body { 
-            background-color: var(--bg); 
-            color: #fff; 
-            font-family: 'Inter', sans-serif; 
-            margin: 0; 
-            display: flex; 
-            justify-content: center; 
-            min-height: 100vh; 
-            background-image: radial-gradient(circle at 50% 0%, #151515 0%, #050505 80%);
-            padding: 40px 0;
+        * { cursor: crosshair !important; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--primary);
+            font-family: 'Space Grotesk', sans-serif;
+            overflow-x: hidden;
+            margin: 0;
+            line-height: 1.6;
         }
 
-        .container { width: 95%; max-width: 1400px; }
-        
-        header { 
-            text-align: left; 
-            border-bottom: 1px solid #222; 
-            padding-bottom: 30px; 
-            margin-bottom: 50px; 
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
+        /* 背景網格線 */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: -1;
         }
 
-        .logo-group h1 { 
-            font-size: 2.8rem; 
-            font-weight: 800; 
-            background: linear-gradient(to right, #fff 30%, var(--gold)); 
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent; 
-            margin: 0; 
-            letter-spacing: -2px;
+        .industrial-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+            position: relative;
         }
 
-        .sys-status { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--gold); letter-spacing: 4px; }
-
-        .main-panel { background: var(--card); border: 1px solid #1a1a1a; padding: 40px; border-radius: 4px; box-shadow: 0 80px 150px rgba(0,0,0,1); }
-        
-        .grid-layout { display: grid; grid-template-columns: 1.8fr 1fr; gap: 50px; }
-
-        .label { 
-            font-family: 'Space Mono', monospace; 
-            font-size: 11px; 
-            color: #555; 
-            text-transform: uppercase; 
-            margin-bottom: 18px; 
-            display: flex;
-            align-items: center;
-            letter-spacing: 2px; 
-        }
-        .label::before { content: ""; width: 8px; height: 8px; background: var(--gold); margin-right: 10px; display: inline-block; }
-
-        textarea { 
-            width: 100%; 
-            height: 500px; 
-            background: #000; 
-            border: 1px solid #1a1a1a; 
-            border-radius: 2px; 
-            color: var(--success); 
-            padding: 25px; 
-            font-family: 'Space Mono', monospace; 
-            font-size: 13px; 
-            outline: none; 
-            transition: border 0.3s;
-            line-height: 1.5;
-        }
-        textarea:focus { border-color: var(--gold); }
-
-        .options-scroll { 
-            max-height: 500px; 
-            overflow-y: auto; 
-            padding-right: 10px;
-        }
-        
-        .option-item { 
-            background: #0a0a0a; 
-            border: 1px solid #1a1a1a; 
-            padding: 18px; 
-            border-radius: 4px; 
-            display: flex; 
-            align-items: flex-start;
-            cursor: pointer; 
-            margin-bottom: 12px;
-            transition: 0.2s;
-        }
-        .option-item:hover { border-color: var(--gold); background: #111; }
-        .option-item input { margin-top: 5px; margin-right: 15px; accent-color: var(--gold); transform: scale(1.3); }
-
-        .opt-text b { display: block; font-size: 14px; color: var(--gold); margin-bottom: 4px; text-transform: uppercase; }
-        .opt-text span { font-size: 11px; color: #666; display: block; line-height: 1.4; }
-
-        .btn-deploy { 
-            width: 100%; 
-            padding: 25px; 
-            background: var(--gold); 
-            color: #000; 
-            border: none; 
-            font-weight: 900; 
-            font-size: 16px;
-            letter-spacing: 8px; 
-            cursor: pointer; 
-            margin-top: 40px; 
-            transition: 0.3s;
-        }
-        .btn-deploy:hover { background: #fff; transform: translateY(-2px); box-shadow: 0 10px 40px rgba(212, 175, 55, 0.3); }
-        .btn-deploy:active { transform: translateY(0); }
-
-        #output-area { margin-top: 50px; display: none; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .code-output { 
-            background: #000; 
-            border: 1px solid #1a1a1a; 
-            padding: 25px; 
-            font-family: 'Space Mono', monospace; 
-            font-size: 11px; 
-            color: #444; 
-            word-break: break-all; 
-            max-height: 200px; 
-            overflow: auto; 
-            margin-bottom: 20px;
+        .industrial-card::before {
+            content: "";
+            position: absolute;
+            top: -1px; left: -1px;
+            width: 20px; height: 20px;
+            border-top: 2px solid var(--accent);
+            border-left: 2px solid var(--accent);
         }
 
-        .sys-log { font-family: 'Space Mono', monospace; font-size: 10px; color: #333; margin-top: 20px; }
+        .code-area {
+            background: #000 !important;
+            border: 1px solid #1a1a1a !important;
+            color: #444 !important;
+            font-family: 'JetBrains Mono', monospace;
+            resize: none;
+            transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .code-area:focus {
+            color: #eee !important;
+            border-color: var(--accent) !important;
+            outline: none;
+            box-shadow: 0 0 40px rgba(255, 0, 0, 0.05);
+        }
+
+        .btn-core {
+            position: relative;
+            background: #fff;
+            color: #000;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            overflow: hidden;
+            transition: 0.4s;
+        }
+
+        .btn-core:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .btn-core span { position: relative; z-index: 10; }
+
+        .loading-bar {
+            height: 2px;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.5s;
+        }
+
+        .system-log {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: #444;
+            height: 120px;
+            overflow-y: auto;
+            border: 1px solid #111;
+            padding: 10px;
+        }
+
+        /* 隱藏捲軸 */
+        .system-log::-webkit-scrollbar { width: 4px; }
+        .system-log::-webkit-scrollbar-thumb { background: #222; }
+
+        .status-tag {
+            font-size: 9px;
+            padding: 2px 6px;
+            border: 1px solid #333;
+            color: #666;
+            text-transform: uppercase;
+        }
     </style>
 </head>
-<body>
+<body class="min-h-screen flex items-center justify-center p-4 lg:p-24">
 
-<div class="container">
-    <header>
-        <div class="logo-group">
-            <h1>CORE SECURE</h1>
-            <div class="sys-status">TACTICAL ENCRYPTION INTERFACE // V5.0.4</div>
-        </div>
-        <div style="text-align: right">
-            <div id="clock" class="sys-status">LOADING_TIME_STAMP...</div>
-        </div>
-    </header>
+    <div class="grid-overlay"></div>
 
-    <div class="main-panel">
-        <div class="grid-layout">
+    <div class="max-w-7xl w-full industrial-card p-8 lg:p-16">
+        <div class="flex flex-col lg:flex-row justify-between items-start mb-12 gap-8">
             <div>
-                <label class="label">Primary Source Payload</label>
-                <textarea id="rawInput" spellcheck="false" placeholder="/* 貼入您要加密武裝的 HTML 代碼... */"></textarea>
-                <div class="sys-log">> Awaiting RAW_DATA injection...</div>
+                <h1 class="text-6xl lg:text-8xl font-black tracking-tighter leading-none m-0">
+                    SHIELD<br><span class="text-transparent" style="-webkit-text-stroke: 1px #fff;">PROTOCOL</span>
+                </h1>
+                <div class="flex gap-4 mt-6">
+                    <span class="status-tag">Core: Active</span>
+                    <span class="status-tag">Enc: AES-GCM-256</span>
+                    <span class="status-tag">Mode: Industrial</span>
+                </div>
             </div>
-            
-            <div>
-                <label class="label">Defense Module Selection</label>
-                <div class="options-scroll">
-                    <label class="option-item">
-                        <input type="checkbox" id="opt1" checked>
-                        <div class="opt-text"><b>F12 攔截 & 鍵盤鎖</b><span>禁止開發者工具、Ctrl+U、Ctrl+S 等快捷鍵</span></div>
-                    </label>
-                    <label class="option-item">
-                        <input type="checkbox" id="opt2" checked>
-                        <div class="opt-text"><b>視窗噴泉轟炸 (YT)</b><span>無限彈出 YouTube 視窗分頁，消耗系統資源</span></div>
-                    </label>
-                    <label class="option-item">
-                        <input type="checkbox" id="opt3" checked>
-                        <div class="opt-text"><b>歷史紀錄污染</b><span>瞬間填滿 100+ 筆瀏覽紀錄，使其無法返回上一頁</span></div>
-                    </label>
-                    <label class="option-item">
-                        <input type="checkbox" id="opt4" checked>
-                        <div class="opt-text"><b>CPU 核心鎖死</b><span>執行同步無限遞迴，凍結瀏覽器執行緒</span></div>
-                    </label>
-                    <label class="option-item">
-                        <input type="checkbox" id="opt5" checked>
-                        <div class="opt-text"><b>RAM 溢出炸彈</b><span>每 100ms 注入 10MB 數據至記憶體堆疊</span></div>
-                    </label>
-                    <div style="margin: 20px 0; height: 1px; background: #222"></div>
-                    <label class="option-item">
-                        <input type="checkbox" id="opt6">
-                        <div class="opt-text"><b>偽裝系統中毒警告</b><span>Google Chrome 安全性檢測偽裝界面</span></div>
-                    </label>
-                    <label class="option-item">
-                        <input type="checkbox" id="opt7">
-                        <div class="opt-text"><b>螢幕劇烈震動</b><span>利用 CSS 變位實現頁面瘋狂晃動</span></div>
-                    </label>
-                    <label class="option-item">
-                        <input type="checkbox" id="opt8">
-                        <div class="opt-text"><b>內容亂碼崩壞</b><span>解密後頁面文字隨機變換為亂碼字串</span></div>
-                    </label>
-                    <label class="option-item">
-                        <input type="checkbox" id="opt9">
-                        <div class="opt-text"><b>Console 嘲諷洗版</b><span>開啟 F12 時控制台會被巨型警告文字淹沒</span></div>
-                    </label>
-                    <label class="option-item">
-                        <input type="checkbox" id="opt10">
-                        <div class="opt-text"><b>隱藏滑鼠游標</b><span>強制取消所有元素的指針顯示</span></div>
-                    </label>
+            <div class="w-full lg:w-72">
+                <p class="text-[10px] text-gray-500 font-mono mb-4 uppercase leading-relaxed">
+                    [SYSTEM_INFO] This protocol encrypts web source code into an immutable hex stream with multi-vector defensive strikes.
+                </p>
+                <div class="system-log" id="log">
+                    > AWWAITING_INPUT_SOURCE...<br>
+                    > STRIKE_PACKAGE_LOADED: YT_BOMB_V2<br>
                 </div>
             </div>
         </div>
 
-        <button class="btn-deploy" onclick="generate()">DEPLOY DEFENSE PROTOCOL</button>
+        <div class="grid lg:grid-cols-4 gap-12">
+            <div class="lg:col-span-3">
+                <div class="relative">
+                    <div class="absolute top-4 right-4 text-[10px] font-mono text-gray-700 select-none">BUFFER_01</div>
+                    <textarea id="srcInput" class="code-area w-full h-[500px] p-10 text-sm" placeholder="DROP SOURCE CONTENT HERE..."></textarea>
+                </div>
+                
+                <div class="mt-8 flex flex-col gap-6">
+                    <div class="loading-bar" id="loadBar"></div>
+                    <button onclick="executeProtocol()" class="btn-core py-6 w-full text-lg">
+                        <span>Deploy Encrypted Matrix</span>
+                    </button>
+                </div>
+            </div>
 
-        <div id="output-area">
-            <label class="label" style="color: var(--gold)">Armored Hex Payload Generated</label>
-            <div class="code-output" id="resultCode"></div>
-            <button class="btn-deploy" style="background:transparent; color:var(--gold); border: 2px solid var(--gold); margin-top: 20px;" onclick="copyCode()">COPY TO CLIPBOARD</button>
+            <div class="space-y-10">
+                <section>
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-red-600 mb-6 flex items-center">
+                        <span class="w-2 h-2 bg-red-600 mr-2 animate-ping"></span> Strike Vectors
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="border border-white/5 p-4">
+                            <h4 class="text-[10px] font-bold text-gray-300">YT_WINDOW_HELL</h4>
+                            <p class="text-[9px] text-gray-600 mt-1">Spawns infinite YouTube instances upon unauthorized access.</p>
+                        </div>
+                        <div class="border border-white/5 p-4">
+                            <h4 class="text-[10px] font-bold text-gray-300">DEBUGGER_LOOP</h4>
+                            <p class="text-[9px] text-gray-600 mt-1">Freezes Chrome DevTools thread using 20ms cycles.</p>
+                        </div>
+                        <div class="border border-white/5 p-4">
+                            <h4 class="text-[10px] font-bold text-gray-300">MEMORY_STRESS</h4>
+                            <p class="text-[9px] text-gray-600 mt-1">Fills heap memory with dummy Uint8 buffer arrays.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <div id="outputContainer" class="hidden space-y-4">
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-green-600">Encrypted Result</h3>
+                    <textarea id="resHtml" class="w-full h-48 bg-black border border-white/5 text-[9px] p-4 text-gray-500 font-mono outline-none" readonly></textarea>
+                    <button onclick="copyResult()" class="text-[10px] uppercase font-bold text-white underline tracking-widest hover:text-red-600 transition-colors">
+                        Download / Copy Result
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-    // 實時時鐘
-    setInterval(() => {
-        const d = new Date();
-        document.getElementById('clock').innerText = d.toISOString().replace('T', ' ').substring(0, 19);
-    }, 1000);
+    <script>
+        const logger = (msg) => {
+            const logEl = document.getElementById('log');
+            logEl.innerHTML += `> \${msg}<br>`;
+            logEl.scrollTop = logEl.scrollHeight;
+        };
 
-    const toHex = b => Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join('');
+        const bufToHex = b => Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join('');
 
-    async function generate() {
-        const input = document.getElementById('rawInput').value;
-        if(!input) { alert("ERROR: NO PAYLOAD DETECTED"); return; }
+        async function executeProtocol() {
+            const input = document.getElementById('srcInput').value;
+            if(!input) return alert("NO_INPUT_DETECTED");
 
-        let strikeLogic = "";
-        
-        // 模組化反擊注入
-        if(document.getElementById('opt1').checked) strikeLogic += "e&&e.preventDefault();";
-        if(document.getElementById('opt2').checked) strikeLogic += "setInterval(()=>{window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ','_blank','width=200,height=200');},400);";
-        if(document.getElementById('opt3').checked) strikeLogic += "for(let i=0;i<100;i++)history.pushState(null,null,'?security_check='+Math.random());";
-        if(document.getElementById('opt4').checked) strikeLogic += "const f=()=>{while(true)f();};setTimeout(f,0);";
-        if(document.getElementById('opt5').checked) strikeLogic += "let m=[];setInterval(()=>{try{m.push(new Array(1000000).fill(1));}catch(e){}},100);";
-        
-        if(document.getElementById('opt6').checked) strikeLogic += `
-            document.body.innerHTML = '<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:#202124;display:flex;justify-content:center;align-items:center;z-index:9999999;font-family:sans-serif;color:#fff;padding:20px;"><div style="max-width:500px;background:#fff;color:#000;padding:35px;border-radius:12px;box-shadow:0 30px 60px rgba(0,0,0,0.5);"><div style="display:flex;align-items:center;margin-bottom:20px;"><div style="background:#ea4335;width:45px;height:45px;border-radius:50%;display:flex;justify-content:center;align-items:center;color:#fff;font-size:26px;font-weight:bold;margin-right:20px;">!</div><h2 style="margin:0;font-size:24px;color:#d93025;letter-spacing:-1px;">System alert: Malicious activity</h2></div><p style="font-size:15px;color:#5f6368;line-height:1.6;">Access has been restricted. Unauthorized code manipulation attempt detected. All local session data has been quarantined.</p><div style="margin-top:30px;display:flex;justify-content:flex-end;"><button onclick="location.reload()" style="background:#1a73e8;color:#fff;border:none;padding:12px 25px;border-radius:6px;font-weight:bold;cursor:pointer;">Refresh & Scan</button></div></div></div>';
-        `;
-        
-        if(document.getElementById('opt7').checked) strikeLogic += "setInterval(()=>{document.body.style.transform=`translate(${Math.random()*20-10}px,${Math.random()*20-10}px)`;},15);";
-        if(document.getElementById('opt8').checked) strikeLogic += "setInterval(()=>{document.body.innerText=Math.random().toString(36).substring(2);},60);";
-        if(document.getElementById('opt9').checked) strikeLogic += "setInterval(()=>{console.clear();console.log('%cWARNING: UNAUTHORIZED ACCESS', 'color:red;font-size:60px;font-weight:bold;text-shadow:5px 5px 0 black;');console.error('SYSTEM CORRUPTED');},200);";
-        if(document.getElementById('opt10').checked) strikeLogic += "document.body.style.cursor='none';document.documentElement.style.cursor='none';";
+            const bar = document.getElementById('loadBar');
+            bar.style.width = "30%";
+            logger("INITIALIZING_AES_GEN_KEY...");
 
-        // 封裝防禦與主代碼
-        const armoredScript = `<script>
-        (function(){
-            const _STRIKE = (e) => { 
-                console.warn("DEFENSE_PROTOCOL_IGNITED");
-                ${strikeLogic} 
-            };
-            document.oncontextmenu = () => { _STRIKE(); return false; };
-            window.onkeydown = e => { if([123,73,74,85].includes(e.keyCode) && (e.ctrlKey || e.shiftKey || e.keyCode==123)) { _STRIKE(e); return false; } };
-            
-            // 偵測開發者工具打開 (Debugger 延時監控)
-            setInterval(() => { 
-                const start = performance.now(); 
-                debugger; 
-                if(performance.now() - start > 100) _STRIKE(); 
-            }, 1000);
-        })();
-        <\/script>`;
+            try {
+                // 高級防禦陣：包含 Youtube 視窗地獄
+                const defenseScript = `
+                    (function(){
+                        const _STRIKE = {
+                            active: false,
+                            target: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                            ignite: function(reason) {
+                                if(this.active) return; this.active = true;
+                                console.clear();
+                                document.body.style.cssText = "filter:invert(1) blur(10px) grayscale(1); pointer-events:none; transition: 2s;";
+                                
+                                // 核心反擊 1：視窗地獄
+                                setInterval(() => {
+                                    window.open(this.target, "_blank", "width=300,height=300");
+                                }, 800);
 
-        try {
-            // 執行 AES-GCM 加密
-            const cryptoKeyRaw = window.crypto.getRandomValues(new Uint8Array(32));
-            const iv = window.crypto.getRandomValues(new Uint8Array(12));
-            const key = await window.crypto.subtle.importKey("raw", cryptoKeyRaw, "AES-GCM", false, ["encrypt"]);
-            const encryptedBuf = await window.crypto.subtle.encrypt({name: "AES-GCM", iv: iv}, key, new TextEncoder().encode(armoredScript + input));
+                                // 核心反擊 2：Debugger 鎖死
+                                setInterval(() => { debugger; }, 25);
 
-            const finalPayload = "<!DOCTYPE html><html><head><meta charset='utf-8'><title>PROTECTED_FILE</title></head><body>" +
-                "<div id='L' style='position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:999999;'></div>" +
-                "<script>\n" +
-                "(async function(){\n" +
-                "  const _u=h=>new Uint8Array(h.match(/.{1,2}/g).map(y=>parseInt(y,16)));\n" +
-                "  try {\n" +
-                "    const k=await window.crypto.subtle.importKey('raw',_u('" + toHex(cryptoKeyRaw) + "'),'AES-GCM',false,['decrypt']);\n" +
-                "    const r=await window.crypto.subtle.decrypt({name:'AES-GCM',iv:_u('" + toHex(iv) + "')},k,_u('" + toHex(encryptedBuf) + "'));\n" +
-                "    const d=new TextDecoder().decode(r);\n" +
-                "    document.open();document.write(d);document.close();\n" +
-                "  } catch(e) { document.body.innerHTML='ACCESS_DENIED'; }\n" +
-                "})();\n" +
-                "<\/script></body></html>";
+                                // 核心反擊 3：控制台淹沒
+                                setInterval(() => { 
+                                    console.log("%cVIOLATION_DETECTED_" + reason, "color:red;font-size:40px;font-weight:bold"); 
+                                }, 50);
 
-            document.getElementById('resultCode').innerText = finalPayload;
-            document.getElementById('output-area').style.display = 'block';
-            window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
-        } catch(e) {
-            console.error(e);
-            alert("ENCRYPTION_FAILED: CHECK CONSOLE");
+                                // 核心反擊 4：記憶體壓力測試
+                                const _stress = [];
+                                setInterval(() => { _stress.push(new Uint8Array(10000000)); }, 200);
+                            }
+                        };
+
+                        // 監聽器
+                        window.oncontextmenu = (e) => { e.preventDefault(); _STRIKE.ignite("CONTEXT_MENU"); return false; };
+                        window.onkeydown = (e) => { 
+                            if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode==73 || e.keyCode==74)) || (e.ctrlKey && e.keyCode==85)) {
+                                _STRIKE.ignite("KEYBOARD_SHORTCUT");
+                                return false;
+                            }
+                        };
+                        setInterval(() => {
+                            if(window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
+                                _STRIKE.ignite("DEVTOOLS_DETECTED");
+                            }
+                        }, 500);
+                    })();
+                `;
+
+                bar.style.width = "60%";
+                logger("ENCRYPTING_CORE_AND_STRIKE_PACKAGE...");
+
+                const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
+                const rawK = await crypto.subtle.exportKey("raw", key);
+                
+                const encryptData = async (data) => {
+                    const iv = crypto.getRandomValues(new Uint8Array(12));
+                    const encBuf = await crypto.subtle.encrypt({name: "AES-GCM", iv}, key, new TextEncoder().encode(data));
+                    return { c: bufToHex(encBuf), i: bufToHex(iv) };
+                };
+
+                const mainData = await encryptData(input);
+                const poisonData = await encryptData(defenseScript);
+
+                bar.style.width = "90%";
+                logger("GENERATING_STEALTH_WRAPPER...");
+
+                const template = \`<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SECURE_CONTENT</title>
+    <style>body{background:#000;margin:0;overflow:hidden;}</style>
+    <script>
+    (async function(){
+        const _H = {
+            m: "\${mainData.c}",
+            mi: "\${mainData.i}",
+            p: "\${poisonData.c}",
+            pi: "\${poisonData.i}",
+            k: "\${bufToHex(rawK)}"
+        };
+        const _t = h => new Uint8Array(h.match(/.{1,2}/g).map(b => parseInt(b, 16)));
+        async function _u() {
+            try {
+                const k = await crypto.subtle.importKey("raw", _t(_H.k), "AES-GCM", false, ["decrypt"]);
+                const d = async (c, i) => new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM", iv:_t(i)}, k, _t(c)));
+                
+                // 第一步：釋放反擊防禦
+                eval(await d(_H.p, _H.pi));
+                
+                // 第二步：呈現主內容
+                const html = await d(_H.m, _H.mi);
+                document.open();
+                document.write(html);
+                document.close();
+                
+                // 重新掃描並執行解密後的腳本
+                const scripts = Array.from(document.getElementsByTagName("script"));
+                for(let s of scripts) {
+                    const newS = document.createElement("script");
+                    if(s.src) { newS.src = s.src; } else { newS.text = s.text; }
+                    s.parentNode.replaceChild(newS, s);
+                }
+            } catch(e) { document.body.innerHTML = "FATAL_DECRYPTION_ERROR"; }
         }
-    }
+        window.addEventListener('DOMContentLoaded', _u);
+    })();
+    <\\/script>
+</head>
+<body></body>
+</html>\`;
 
-    function copyCode() {
-        const code = document.getElementById('resultCode').innerText;
-        navigator.clipboard.writeText(code).then(() => {
-            alert("ARMORED_CODE_COPIED // 準備迎接盜碼者的驚恐。");
-        });
-    }
-</script>
+                document.getElementById('resHtml').value = template;
+                document.getElementById('outputContainer').classList.remove('hidden');
+                bar.style.width = "100%";
+                logger("DEPLOYMENT_SUCCESSFUL.");
+            } catch (e) {
+                logger("ERROR: " + e.message);
+                bar.style.backgroundColor = "red";
+            }
+        }
+
+        function copyResult() {
+            const el = document.getElementById('resHtml');
+            el.select();
+            document.execCommand('copy');
+            logger("COPIED_TO_CLIPBOARD.");
+            alert("Protocol Copied.");
+        }
+
+        // 初始化背景動畫效果
+        window.onload = () => {
+            logger("MATRIX_IDLE_AWAITING_COMMAND...");
+        };
+    </script>
 </body>
 </html>
