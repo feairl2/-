@@ -2,93 +2,287 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>PRIMAL VAULT</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRIMAL VAULT | 頂級內容安全部署系統</title>
     <style>
-        :root { --bg: #000; --text: #fff; }
-        body { background: var(--bg); color: var(--text); font-family: "Inter", sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-        .wrapper { width: 100%; max-width: 600px; padding: 40px; border: 1px solid #111; background: #050505; text-align: center; }
-        h1 { font-weight: 100; letter-spacing: 12px; text-transform: uppercase; font-size: 18px; margin-bottom: 30px; }
-        textarea { width: 100%; height: 180px; background: transparent; border: 1px solid #222; color: #fff; padding: 15px; outline: none; font-size: 12px; font-family: monospace; }
-        .btn { background: #fff; color: #000; border: none; padding: 15px 40px; font-size: 10px; font-weight: 800; letter-spacing: 2px; cursor: pointer; text-transform: uppercase; margin-top: 25px; }
-        #out { margin-top: 25px; height: 100px; color: #444; border-color: #111; display: none; }
+        /* 大品牌官網極簡風格定義 */
+        :root {
+            --bg: #050505;
+            --container-bg: #0a0a0a;
+            --accent: #ffffff;
+            --text-dim: #666;
+            --border: #1a1a1a;
+            --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            background-color: var(--bg);
+            color: var(--accent);
+            font-family: var(--font);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            letter-spacing: -0.02em;
+        }
+
+        .vault-interface {
+            width: 100%;
+            max-width: 850px;
+            padding: 80px 60px;
+            background: var(--container-bg);
+            border: 1px solid var(--border);
+            position: relative;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+        }
+
+        .brand-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .brand-header h1 {
+            font-weight: 200;
+            font-size: 28px;
+            letter-spacing: 18px;
+            text-transform: uppercase;
+            margin: 0;
+            background: linear-gradient(to bottom, #fff, #444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-header p {
+            font-size: 10px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-top: 15px;
+        }
+
+        .input-wrapper {
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .input-wrapper label {
+            display: block;
+            font-size: 9px;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 280px;
+            background: #000;
+            border: 1px solid #1a1a1a;
+            color: #888;
+            padding: 25px;
+            outline: none;
+            font-size: 13px;
+            font-family: "Fira Code", "Courier New", monospace;
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            resize: none;
+            line-height: 1.6;
+        }
+
+        textarea:focus {
+            border-color: #444;
+            color: #fff;
+            box-shadow: 0 0 30px rgba(255,255,255,0.02);
+        }
+
+        .action-zone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .btn-deploy {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 20px 80px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.4s;
+            position: relative;
+        }
+
+        .btn-deploy:hover {
+            transform: translateY(-2px);
+            background: #ccc;
+            letter-spacing: 7px;
+        }
+
+        .btn-deploy:active {
+            transform: translateY(1px);
+        }
+
+        #output-container {
+            margin-top: 60px;
+            width: 100%;
+            display: none;
+            animation: slideUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .output-label {
+            font-size: 9px;
+            color: #228b22;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        #final-payload {
+            height: 120px;
+            background: #050505;
+            color: #333;
+            border-color: #111;
+            font-size: 10px;
+            cursor: pointer;
+        }
+
+        .footer-note {
+            position: absolute;
+            bottom: -60px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 9px;
+            color: #222;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
     </style>
 </head>
 <body>
 
-<div class="wrapper">
-    <h1>Primal Vault</h1>
-    <textarea id="src" placeholder="貼入 HTML 代碼..."></textarea>
-    <button class="btn" onclick="build()">Generate Secure File</button>
-    <textarea id="out" readonly onclick="this.select(); document.execCommand('copy');"></textarea>
+<div class="vault-interface">
+    <div class="brand-header">
+        <h1>Primal Vault</h1>
+        <p>Advanced Content Security Protocol</p>
+    </div>
+
+    <div class="input-wrapper">
+        <label>Input Raw Payload (HTML/JS/CSS)</label>
+        <textarea id="rawSource" placeholder="// PASTE HIGH-SENSITIVITY CODE HERE..."></textarea>
+    </div>
+
+    <div class="action-zone">
+        <button class="btn-deploy" onclick="generateSecurePackage()">Seal & Encrypt</button>
+    </div>
+
+    <div id="output-container">
+        <label class="output-label">● MIL-SPEC 256-BIT ENCRYPTION ACTIVE</label>
+        <textarea id="final-payload" readonly onclick="copyToClipboard()"></textarea>
+    </div>
+
+    <div class="footer-note">Unauthorized duplication of this protocol is strictly prohibited.</div>
 </div>
 
 <script>
-async function build() {
-    const raw = document.getElementById('src').value;
-    if(!raw) return;
+    // 工具函數：Buffer 轉 Hex
+    const bufToHex = buf => Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    
+    // 工具函數：String 轉 Hex
+    const strToHex = str => bufToHex(new TextEncoder().encode(str));
 
-    const encoder = new TextEncoder();
-    const data = encoder.encode(raw);
-    const key = await window.crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
-    const iv = window.crypto.getRandomValues(new Uint8Array(12));
-    const encrypted = await window.crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, key, data);
+    async function generateSecurePackage() {
+        const source = document.getElementById('rawSource').value;
+        if (!source) return;
 
-    const b2h = b => Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join('');
-    const kH = b2h(await window.crypto.subtle.exportKey("raw", key));
-    const iH = b2h(iv);
-    const dH = b2h(encrypted);
+        // 1. 生成 AES-GCM 256 密鑰
+        const cryptoKey = await window.crypto.subtle.generateKey(
+            { name: "AES-GCM", length: 256 },
+            true,
+            ["encrypt", "decrypt"]
+        );
 
-    document.getElementById('out').value = `<!DOCTYPE html>
+        const iv = window.crypto.getRandomValues(new Uint8Array(12));
+        const encryptedBuffer = await window.crypto.subtle.encrypt(
+            { name: "AES-GCM", iv: iv },
+            cryptoKey,
+            new TextEncoder().encode(source)
+        );
+
+        // 匯出密鑰數據
+        const keyHex = bufToHex(await window.crypto.subtle.exportKey("raw", cryptoKey));
+        const ivHex = bufToHex(iv);
+        const dataHex = bufToHex(encryptedBuffer);
+
+        // 2. 封裝防禦邏輯並進行隱形化編碼
+        // 這段邏輯會被轉化為 Hex 數位，動態執行
+        const stealthLogic = `
+            const _kill = () => { document.body.innerHTML = ""; location.replace("about:blank"); };
+            window.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.shiftKey) { e.preventDefault(); _kill(); }
+                if (e.key === 'F12' || (e.ctrlKey && e.key.toLowerCase() === 'u')) { e.preventDefault(); _kill(); }
+            }, true);
+            setInterval(() => {
+                if(window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) _kill();
+            }, 400);
+            const _db = () => { (function(){}).constructor("debugger")(); };
+            setInterval(_db, 50);
+            document.oncontextmenu = () => false;
+            document.onselectstart = () => false;
+        `;
+        const logicHex = strToHex(stealthLogic);
+
+        // 3. 構建受保護的最終 HTML
+        const payload = \`<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
+    <title>SECURE VAULT</title>
     <script>
-    (function() {
-        let auth = false;
-        document.addEventListener('mousedown', () => auth = true, {once:true});
+    (function(){
+        const _h2b = h => new Uint8Array(h.match(/.{1,2}/g).map(b => parseInt(b, 16)));
+        const _dec = b => new TextDecoder().decode(b);
+        
+        // 啟動隱形防禦層
+        try { new Function(_dec(_h2b("\${logicHex}")))(); } catch(e){}
 
-        const punish = () => {
-            if(auth) {
-                for(let i=0; i<3; i++) window.open('https://www.youtube.com', '_blank');
-            }
-            location.href = "about:blank";
-        };
-
-        // 快捷鍵攔截
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.ctrlKey && e.key === 'U')) {
-                e.preventDefault();
-                punish();
-            }
-        }, true);
-
-        // 偵測 F12 視窗變動
-        setInterval(() => {
-            if(window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) punish();
-        }, 500);
-
-        // Debugger 與右鍵禁用
-        setInterval(() => { (function(){}).constructor("debugger")(); }, 50);
-        document.oncontextmenu = () => false;
-
-        // 瞬發解密 (不顯示加載動畫)
-        const h2b = h => new Uint8Array(h.match(/.{1,2}/g).map(b => parseInt(b, 16)));
+        // 啟動主內容解密
         window.onload = async () => {
             try {
-                const k = await window.crypto.subtle.importKey("raw", h2b("${kH}"), "AES-GCM", true, ["decrypt"]);
-                const d = await window.crypto.subtle.decrypt({ name: "AES-GCM", iv: h2b("${iH}") }, k, h2b("${dH}"));
-                document.open(); 
-                document.write(new TextDecoder().decode(d)); 
-                document.close();
-            } catch(e) { document.body.innerHTML = "Access Denied"; }
+                const k = await window.crypto.subtle.importKey("raw", _h2b("\${keyHex}"), "AES-GCM", true, ["decrypt"]);
+                const d = await window.crypto.subtle.decrypt({name:"AES-GCM", iv:_h2b("\${ivHex}")}, k, _h2b("\${dataHex}"));
+                document.open(); document.write(_dec(d)); document.close();
+            } catch(e) { document.body.innerHTML = ""; }
         };
     })();
     <\/script>
 </head>
 <body style="background:#000;"></body>
-</html>`;
-    document.getElementById('out').style.display = 'block';
-}
+</html>\`;
+
+        const outField = document.getElementById('final-payload');
+        outField.value = payload;
+        document.getElementById('output-container').style.display = 'block';
+    }
+
+    function copyToClipboard() {
+        const copyText = document.getElementById("final-payload");
+        copyText.select();
+        document.execCommand("copy");
+        alert("Encrypted Payload Copied to Clipboard.");
+    }
 </script>
 </body>
 </html>
