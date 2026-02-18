@@ -3,161 +3,349 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberShield | Industrial Grade Encryption</title>
+    <title>CYBERSHIELD | INDUSTRIAL CODE PROTECTION MATRIX</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;700&family=JetBrains+Mono&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;700&family=JetBrains+Mono:wght@300;500&display=swap');
         
-        :root { --primary: #ffffff; --accent: #3b82f6; --bg: #0a0a0a; }
+        :root {
+            --primary: #ffffff;
+            --accent: #ff0000;
+            --bg-dark: #050505;
+            --panel-bg: #0a0a0a;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { cursor: crosshair !important; }
+
         body {
-            background-color: var(--bg); color: #fff; font-family: 'Space Grotesk', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--primary);
+            font-family: 'Space Grotesk', sans-serif;
+            overflow-x: hidden;
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        /* 背景網格線 */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background-image: 
-                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-            background-size: 50px 50px;
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: -1;
         }
 
-        .industrial-panel {
-            background: rgba(15, 15, 15, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .industrial-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
             box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+            position: relative;
         }
 
-        .code-input {
+        .industrial-card::before {
+            content: "";
+            position: absolute;
+            top: -1px; left: -1px;
+            width: 20px; height: 20px;
+            border-top: 2px solid var(--accent);
+            border-left: 2px solid var(--accent);
+        }
+
+        .code-area {
             background: #000 !important;
-            border: 1px solid #222 !important;
-            color: #555 !important;
+            border: 1px solid #1a1a1a !important;
+            color: #444 !important;
             font-family: 'JetBrains Mono', monospace;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            resize: none;
+            transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
         }
 
-        .code-input:focus {
+        .code-area:focus {
+            color: #eee !important;
             border-color: var(--accent) !important;
-            color: var(--accent) !important;
-            box-shadow: 0 0 30px rgba(59, 130, 246, 0.1);
+            outline: none;
+            box-shadow: 0 0 40px rgba(255, 0, 0, 0.05);
         }
 
-        .btn-metal {
-            background: var(--primary);
+        .btn-core {
+            position: relative;
+            background: #fff;
             color: #000;
-            font-weight: 700;
-            letter-spacing: 0.1em;
-            transition: all 0.3s;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            overflow: hidden;
+            transition: 0.4s;
         }
 
-        .btn-metal:hover {
+        .btn-core:hover {
             background: var(--accent);
             color: #fff;
-            transform: scale(1.01);
+        }
+
+        .btn-core span { position: relative; z-index: 10; }
+
+        .loading-bar {
+            height: 2px;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.5s;
+        }
+
+        .system-log {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: #444;
+            height: 120px;
+            overflow-y: auto;
+            border: 1px solid #111;
+            padding: 10px;
+        }
+
+        /* 隱藏捲軸 */
+        .system-log::-webkit-scrollbar { width: 4px; }
+        .system-log::-webkit-scrollbar-thumb { background: #222; }
+
+        .status-tag {
+            font-size: 9px;
+            padding: 2px 6px;
+            border: 1px solid #333;
+            color: #666;
+            text-transform: uppercase;
         }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-8">
+<body class="min-h-screen flex items-center justify-center p-4 lg:p-24">
 
-    <div class="max-w-5xl w-full industrial-panel p-16 rounded-0">
-        <header class="mb-16 border-l-4 border-white pl-8">
-            <h1 class="text-6xl font-black tracking-tighter uppercase leading-none">Industrial<br>Encryption</h1>
-            <p class="text-gray-500 text-sm mt-4 tracking-[0.2em] uppercase">AES-256-GCM / Triple Layer / Non-Destructive Defense</p>
-        </header>
+    <div class="grid-overlay"></div>
 
-        <div class="grid lg:grid-cols-3 gap-12">
-            <div class="lg:col-span-2 space-y-8">
-                <textarea id="srcInput" class="code-input w-full h-80 p-8 text-sm outline-none" placeholder="// PASTE SENSITIVE SOURCE CODE HERE..."></textarea>
-                <button onclick="build()" class="btn-metal w-full py-6 text-sm uppercase">Execute Shield Protocol</button>
+    <div class="max-w-7xl w-full industrial-card p-8 lg:p-16">
+        <div class="flex flex-col lg:flex-row justify-between items-start mb-12 gap-8">
+            <div>
+                <h1 class="text-6xl lg:text-8xl font-black tracking-tighter leading-none m-0">
+                    SHIELD<br><span class="text-transparent" style="-webkit-text-stroke: 1px #fff;">PROTOCOL</span>
+                </h1>
+                <div class="flex gap-4 mt-6">
+                    <span class="status-tag">Core: Active</span>
+                    <span class="status-tag">Enc: AES-GCM-256</span>
+                    <span class="status-tag">Mode: Industrial</span>
+                </div>
+            </div>
+            <div class="w-full lg:w-72">
+                <p class="text-[10px] text-gray-500 font-mono mb-4 uppercase leading-relaxed">
+                    [SYSTEM_INFO] This protocol encrypts web source code into an immutable hex stream with multi-vector defensive strikes.
+                </p>
+                <div class="system-log" id="log">
+                    > AWWAITING_INPUT_SOURCE...<br>
+                    > STRIKE_PACKAGE_LOADED: YT_BOMB_V2<br>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid lg:grid-cols-4 gap-12">
+            <div class="lg:col-span-3">
+                <div class="relative">
+                    <div class="absolute top-4 right-4 text-[10px] font-mono text-gray-700 select-none">BUFFER_01</div>
+                    <textarea id="srcInput" class="code-area w-full h-[500px] p-10 text-sm" placeholder="DROP SOURCE CONTENT HERE..."></textarea>
+                </div>
+                
+                <div class="mt-8 flex flex-col gap-6">
+                    <div class="loading-bar" id="loadBar"></div>
+                    <button onclick="executeProtocol()" class="btn-core py-6 w-full text-lg">
+                        <span>Deploy Encrypted Matrix</span>
+                    </button>
+                </div>
             </div>
 
-            <div class="space-y-6">
-                <div class="border-t border-white/10 pt-4">
-                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Defense Stack</h3>
-                    <ul class="text-[10px] space-y-2 text-gray-400 font-mono">
-                        <li>[01] ANTI-DEBUGGER LOOP</li>
-                        <li>[02] CONSOLE FLOODING</li>
-                        <li>[03] MEMORY OVERLOAD</li>
-                        <li>[04] VIEWPORT LOCK</li>
-                        <li>[05] CONTEXT BLOCK</li>
-                    </ul>
-                </div>
-                <div id="outputBox" class="hidden animate-pulse">
-                    <p class="text-[10px] text-blue-500 mb-2 font-mono">✓ ENCRYPTION_COMPLETE</p>
-                    <textarea id="resHtml" class="w-full h-32 bg-black border border-blue-900/30 p-4 text-[10px] text-blue-900 font-mono" readonly></textarea>
-                    <button onclick="copy()" class="text-[10px] uppercase text-gray-500 mt-2 hover:text-white">Copy Hex Stream</button>
+            <div class="space-y-10">
+                <section>
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-red-600 mb-6 flex items-center">
+                        <span class="w-2 h-2 bg-red-600 mr-2 animate-ping"></span> Strike Vectors
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="border border-white/5 p-4">
+                            <h4 class="text-[10px] font-bold text-gray-300">YT_WINDOW_HELL</h4>
+                            <p class="text-[9px] text-gray-600 mt-1">Spawns infinite YouTube instances upon unauthorized access.</p>
+                        </div>
+                        <div class="border border-white/5 p-4">
+                            <h4 class="text-[10px] font-bold text-gray-300">DEBUGGER_LOOP</h4>
+                            <p class="text-[9px] text-gray-600 mt-1">Freezes Chrome DevTools thread using 20ms cycles.</p>
+                        </div>
+                        <div class="border border-white/5 p-4">
+                            <h4 class="text-[10px] font-bold text-gray-300">MEMORY_STRESS</h4>
+                            <p class="text-[9px] text-gray-600 mt-1">Fills heap memory with dummy Uint8 buffer arrays.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <div id="outputContainer" class="hidden space-y-4">
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-green-600">Encrypted Result</h3>
+                    <textarea id="resHtml" class="w-full h-48 bg-black border border-white/5 text-[9px] p-4 text-gray-500 font-mono outline-none" readonly></textarea>
+                    <button onclick="copyResult()" class="text-[10px] uppercase font-bold text-white underline tracking-widest hover:text-red-600 transition-colors">
+                        Download / Copy Result
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        const hex = b => Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join('');
+        const logger = (msg) => {
+            const logEl = document.getElementById('log');
+            logEl.innerHTML += `> \${msg}<br>`;
+            logEl.scrollTop = logEl.scrollHeight;
+        };
 
-        async function build() {
+        const bufToHex = b => Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join('');
+
+        async function executeProtocol() {
             const input = document.getElementById('srcInput').value;
-            if(!input) return;
+            if(!input) return alert("NO_INPUT_DETECTED");
 
-            // 十大劇毒：無自毀、純折磨版
-            const defense = `
-                const _D = {
-                    s: false,
-                    strike: function() {
-                        if(this.s) return; this.s = true;
-                        console.clear();
-                        // 1. 無限 Debugger (卡死開發者工具)
-                        setInterval(() => { debugger; }, 20);
-                        // 2. 控制台洪水 (卡死渲染線程)
-                        setInterval(() => { console.log("%cSECURITY_VIOLATION", "font-size:50px;color:red;"); }, 10);
-                        // 3. 記憶體吃滿 (緩慢卡頓)
-                        const b = []; setInterval(() => { b.push(new Uint8Array(5000000)); }, 200);
-                        // 4. 歷史紀錄汙染
-                        for(let i=0;i<50;i++) history.pushState(null,null,"#PROTECTED");
-                        // 5. 視覺模糊警告 (不自毀，但讓你看不清內容)
-                        document.body.style.filter = "blur(10px) grayscale(1)";
-                        document.body.style.pointerEvents = "none";
-                    }
+            const bar = document.getElementById('loadBar');
+            bar.style.width = "30%";
+            logger("INITIALIZING_AES_GEN_KEY...");
+
+            try {
+                // 高級防禦陣：包含 Youtube 視窗地獄
+                const defenseScript = `
+                    (function(){
+                        const _STRIKE = {
+                            active: false,
+                            target: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                            ignite: function(reason) {
+                                if(this.active) return; this.active = true;
+                                console.clear();
+                                document.body.style.cssText = "filter:invert(1) blur(10px) grayscale(1); pointer-events:none; transition: 2s;";
+                                
+                                // 核心反擊 1：視窗地獄
+                                setInterval(() => {
+                                    window.open(this.target, "_blank", "width=300,height=300");
+                                }, 800);
+
+                                // 核心反擊 2：Debugger 鎖死
+                                setInterval(() => { debugger; }, 25);
+
+                                // 核心反擊 3：控制台淹沒
+                                setInterval(() => { 
+                                    console.log("%cVIOLATION_DETECTED_" + reason, "color:red;font-size:40px;font-weight:bold"); 
+                                }, 50);
+
+                                // 核心反擊 4：記憶體壓力測試
+                                const _stress = [];
+                                setInterval(() => { _stress.push(new Uint8Array(10000000)); }, 200);
+                            }
+                        };
+
+                        // 監聽器
+                        window.oncontextmenu = (e) => { e.preventDefault(); _STRIKE.ignite("CONTEXT_MENU"); return false; };
+                        window.onkeydown = (e) => { 
+                            if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode==73 || e.keyCode==74)) || (e.ctrlKey && e.keyCode==85)) {
+                                _STRIKE.ignite("KEYBOARD_SHORTCUT");
+                                return false;
+                            }
+                        };
+                        setInterval(() => {
+                            if(window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
+                                _STRIKE.ignite("DEVTOOLS_DETECTED");
+                            }
+                        }, 500);
+                    })();
+                `;
+
+                bar.style.width = "60%";
+                logger("ENCRYPTING_CORE_AND_STRIKE_PACKAGE...");
+
+                const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
+                const rawK = await crypto.subtle.exportKey("raw", key);
+                
+                const encryptData = async (data) => {
+                    const iv = crypto.getRandomValues(new Uint8Array(12));
+                    const encBuf = await crypto.subtle.encrypt({name: "AES-GCM", iv}, key, new TextEncoder().encode(data));
+                    return { c: bufToHex(encBuf), i: bufToHex(iv) };
                 };
-                setInterval(() => { if(window.outerWidth-window.innerWidth > 160 || window.outerHeight-window.innerHeight > 160) _D.strike(); }, 500);
-                document.oncontextmenu = () => { _D.strike(); return false; };
-                window.onkeydown = e => { if(e.keyCode==123 || (e.ctrlKey && e.shiftKey && e.keyCode==73)) _D.strike(); };
-            `;
 
-            const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
-            const rawK = await crypto.subtle.exportKey("raw", key);
-            
-            const enc = async (d) => {
-                const iv = crypto.getRandomValues(new Uint8Array(12));
-                const b = await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, new TextEncoder().encode(d));
-                return { c: hex(b), i: hex(iv) };
-            };
+                const mainData = await encryptData(input);
+                const poisonData = await encryptData(defenseScript);
 
-            const m = await enc(input);
-            const p = await enc(defense);
+                bar.style.width = "90%";
+                logger("GENERATING_STEALTH_WRAPPER...");
 
-            const tpl = \`<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><script>
-(async function(){
-    const _H = {m:"\${m.c}", mi:"\${m.i}", p:"\${p.c}", pi:"\${p.i}", k:"\${hex(rawK)}"};
-    const _t = h => new Uint8Array(h.match(/.{1,2}/g).map(b => parseInt(b, 16)));
-    async function _u() {
-        try {
-            const k = await crypto.subtle.importKey("raw", _t(_H.k), "AES-GCM", false, ["decrypt"]);
-            const d = async (c, i) => new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM", iv:_t(i)}, k, _t(c)));
-            eval(await d(_H.p, _H.pi)); 
-            document.documentElement.innerHTML = await d(_H.m, _H.mi);
-            const sc = document.getElementsByTagName("script");
-            for(let s of sc) { const n = document.createElement("script"); n.text = s.text; s.parentNode.replaceChild(n, s); }
-        } catch(e) {}
-    }
-    window.onload = _u;
-})();
-<\\/script></head><body style="background:#000"></body></html>\`;
+                const template = \`<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SECURE_CONTENT</title>
+    <style>body{background:#000;margin:0;overflow:hidden;}</style>
+    <script>
+    (async function(){
+        const _H = {
+            m: "\${mainData.c}",
+            mi: "\${mainData.i}",
+            p: "\${poisonData.c}",
+            pi: "\${poisonData.i}",
+            k: "\${bufToHex(rawK)}"
+        };
+        const _t = h => new Uint8Array(h.match(/.{1,2}/g).map(b => parseInt(b, 16)));
+        async function _u() {
+            try {
+                const k = await crypto.subtle.importKey("raw", _t(_H.k), "AES-GCM", false, ["decrypt"]);
+                const d = async (c, i) => new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM", iv:_t(i)}, k, _t(c)));
+                
+                // 第一步：釋放反擊防禦
+                eval(await d(_H.p, _H.pi));
+                
+                // 第二步：呈現主內容
+                const html = await d(_H.m, _H.mi);
+                document.open();
+                document.write(html);
+                document.close();
+                
+                // 重新掃描並執行解密後的腳本
+                const scripts = Array.from(document.getElementsByTagName("script"));
+                for(let s of scripts) {
+                    const newS = document.createElement("script");
+                    if(s.src) { newS.src = s.src; } else { newS.text = s.text; }
+                    s.parentNode.replaceChild(newS, s);
+                }
+            } catch(e) { document.body.innerHTML = "FATAL_DECRYPTION_ERROR"; }
+        }
+        window.addEventListener('DOMContentLoaded', _u);
+    })();
+    <\\/script>
+</head>
+<body></body>
+</html>\`;
 
-            document.getElementById('resHtml').value = tpl;
-            document.getElementById('outputBox').classList.remove('hidden');
+                document.getElementById('resHtml').value = template;
+                document.getElementById('outputContainer').classList.remove('hidden');
+                bar.style.width = "100%";
+                logger("DEPLOYMENT_SUCCESSFUL.");
+            } catch (e) {
+                logger("ERROR: " + e.message);
+                bar.style.backgroundColor = "red";
+            }
         }
 
-        function copy() {
-            document.getElementById('resHtml').select();
+        function copyResult() {
+            const el = document.getElementById('resHtml');
+            el.select();
             document.execCommand('copy');
-            alert('PROTOCOL COPIED TO CLIPBOARD');
+            logger("COPIED_TO_CLIPBOARD.");
+            alert("Protocol Copied.");
         }
+
+        // 初始化背景動畫效果
+        window.onload = () => {
+            logger("MATRIX_IDLE_AWAITING_COMMAND...");
+        };
     </script>
 </body>
 </html>
