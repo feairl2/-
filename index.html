@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>CyberShield v5 | Ghost Protocol</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;600&display=swap');
+        body { background: #000; color: #fff; font-family: 'Space Grotesk', sans-serif; overflow: hidden; }
+        .glass { background: rgba(255,255,255,0.02); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); border-radius: 40px; }
+        .neon-glow { box-shadow: 0 0 50px rgba(99, 102, 241, 0.1); }
+        .input-box { background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
+        .input-box:focus { border-color: #6366f1; box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+
+    <div class="max-w-4xl w-full p-6">
+        <div class="glass p-12 neon-glow text-center">
+            <h1 class="text-4xl font-bold tracking-[0.2em] mb-2">GHOST<span class="text-indigo-500">ENCRYPT</span></h1>
+            <p class="text-gray-500 text-xs uppercase tracking-widest mb-10">連防禦邏輯也徹底消失的終極封裝</p>
+            
+            <textarea id="rawInput" class="input-box w-full h-64 rounded-3xl p-6 text-indigo-300 font-mono text-sm outline-none mb-8" placeholder="貼上您的網頁源碼..."></textarea>
+            
+            <button onclick="ghostDeploy()" class="w-full bg-indigo-600 hover:bg-indigo-500 py-5 rounded-2xl font-bold transition-all shadow-xl active:scale-95">
+                執行幽靈協定封裝
+            </button>
+        </div>
+
+        <div id="result" class="hidden mt-8 glass p-8">
+            <textarea id="outputHtml" class="w-full h-32 bg-transparent text-[10px] text-gray-600 font-mono outline-none" readonly></textarea>
+            <button onclick="copy()" class="w-full mt-4 text-xs text-indigo-400 hover:text-white transition-colors uppercase">複製加密代碼</button>
+        </div>
+    </div>
+
+    <script>
+        const toHex = b => Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join('');
+
+        async function ghostDeploy() {
+            const input = document.getElementById('rawInput').value;
+            if(!input) return;
+
+            // 1. 準備「劇毒功能」的原始字串（這段也會被加密）
+            const poisonLogic = `
+                const strike = () => {
+                    document.body.innerHTML = "<h1>FATAL ERROR</h1>";
+                    setInterval(() => { debugger; }, 50);
+                    for(let i=0;i<100;i++) history.pushState(null,null,"#ERR");
+                    location.replace("about:blank");
+                };
+                setInterval(() => { if(window.outerWidth-window.innerWidth > 160) strike(); }, 500);
+                document.oncontextmenu = () => false;
+                window.onkeydown = e => { if(e.keyCode==123 || (e.ctrlKey && e.shiftKey && e.keyCode==73)) strike(); };
+            `;
+
+            // 2. 生成金鑰
+            const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
+            const rawK = await crypto.subtle.exportKey("raw", key);
+            
+            // 3. 分別加密「正文」與「毒藥」
+            const enc = async (data) => {
+                const iv = crypto.getRandomValues(new Uint8Array(12));
+                const buf = await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, new TextEncoder().encode(data));
+                return { c: toHex(buf), i: toHex(iv) };
+            };
+
+            const mainData = await enc(input);
+            const poisonData = await enc(poisonLogic);
+
+            // 4. 輸出模板：連解密函數都混淆化
+            const template = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><script>
+(async function(){
+    const _H = { m: "${mainData.c}", mi: "${mainData.i}", p: "${poisonData.c}", pi: "${poisonData.i}", k: "${toHex(rawK)}" };
+    const _t = h => new Uint8Array(h.match(/.{1,2}/g).map(b => parseInt(b, 16)));
+    async function _u() {
+        try {
+            const k = await crypto.subtle.importKey("raw", _t(_H.k), "AES-GCM", false, ["decrypt"]);
+            const d = async (c, i) => new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM", iv:_t(i)}, k, _t(c)));
+            
+            // 先釋放毒藥邏輯並執行
+            eval(await d(_H.p, _H.pi));
+            
+            // 再釋放主內容
+            document.open(); document.write(await d(_H.m, _H.mi)); document.close();
+        } catch(e) { location.replace("about:blank"); }
+    }
+    _u();
+})();
+<\/script></head><body style="background:#000"></body></html>`;
+
+            document.getElementById('outputHtml').value = template;
+            document.getElementById('result').classList.remove('hidden');
+        }
+
+        function copy() {
+            document.getElementById('outputHtml').select();
+            document.execCommand('copy');
+            alert('幽靈封裝已複製');
+        }
+    </script>
+</body>
+</html>
