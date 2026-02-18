@@ -3,33 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PRIMAL SAFE | 頂級內容保護系統</title>
+    <title>PRIMAL CRYPT | 高階安全加密系統</title>
     <style>
-        :root { --accent: #ffffff; --bg: #0a0a0a; --text-dim: #888; }
-        body { background: var(--bg); color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
-        .container { width: 100%; max-width: 600px; padding: 40px; text-align: center; }
-        h1 { font-weight: 300; letter-spacing: 8px; text-transform: uppercase; margin-bottom: 40px; color: var(--accent); }
-        .input-group { position: relative; margin-bottom: 30px; }
-        textarea { width: 100%; height: 180px; background: transparent; border: 1px solid #333; color: #fff; padding: 15px; border-radius: 0; outline: none; transition: border 0.4s; font-size: 14px; box-sizing: border-box; }
-        textarea:focus { border-color: var(--accent); }
-        .btn { background: #fff; color: #000; border: none; padding: 15px 40px; font-size: 12px; font-weight: 600; letter-spacing: 2px; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
-        .btn:hover { background: #ccc; }
-        .output-box { margin-top: 40px; display: none; border-top: 1px solid #333; padding-top: 30px; }
-        .copy-area { color: var(--text-dim); font-size: 11px; text-transform: uppercase; margin-bottom: 10px; cursor: pointer; }
-        #finalOutput { height: 80px; font-size: 10px; color: var(--text-dim); border-color: #222; }
+        :root { --accent: #ffffff; --bg: #050505; }
+        body { background: var(--bg); color: #fff; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
+        .container { width: 100%; max-width: 700px; padding: 60px; text-align: center; border: 1px solid #1a1a1a; background: #0a0a0a; }
+        h1 { font-weight: 200; letter-spacing: 12px; text-transform: uppercase; margin-bottom: 50px; color: var(--accent); font-size: 24px; }
+        textarea { width: 100%; height: 200px; background: transparent; border: 1px solid #222; color: #eee; padding: 20px; outline: none; transition: 0.5s; font-size: 13px; box-sizing: border-box; font-family: monospace; }
+        textarea:focus { border-color: #555; }
+        .btn { background: #fff; color: #000; border: none; padding: 18px 50px; font-size: 11px; font-weight: 700; letter-spacing: 3px; cursor: pointer; text-transform: uppercase; margin-top: 30px; transition: 0.4s; }
+        .btn:hover { letter-spacing: 5px; background: #ddd; }
+        .output-box { margin-top: 50px; display: none; }
+        #finalOutput { height: 100px; color: #666; font-size: 10px; border-color: #111; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Primal Safe</h1>
-    <div class="input-group">
-        <textarea id="source" placeholder="貼入 HTML 原始碼"></textarea>
-    </div>
-    <button class="btn" onclick="build()">進行高級加密</button>
+    <h1>Primal Crypt</h1>
+    <textarea id="source" placeholder="ENTER RAW HTML CONTENT"></textarea>
+    <br>
+    <button class="btn" onclick="build()">Generate Protected Vault</button>
 
     <div class="output-box" id="outputBox">
-        <div class="copy-area">加密成功 - 點擊複製受保護的代碼</div>
+        <p style="font-size: 10px; color: #444; letter-spacing: 1px;">ENCRYPTION COMPLETE - COPY BELOW</p>
         <textarea id="finalOutput" readonly onclick="this.select(); document.execCommand('copy');"></textarea>
     </div>
 </div>
@@ -42,7 +39,7 @@ async function build() {
     const encoder = new TextEncoder();
     const data = encoder.encode(raw);
 
-    // 1. Web Crypto API - AES-GCM 256
+    // Web Crypto API - AES-GCM
     const key = await window.crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
     const iv = window.crypto.getRandomValues(new Uint8Array(12));
     const encrypted = await window.crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, key, data);
@@ -50,57 +47,67 @@ async function build() {
     const exportedKey = new Uint8Array(await window.crypto.subtle.exportKey("raw", key));
     const encryptedData = new Uint8Array(encrypted);
 
-    // 轉為十六進位 (Hex)，完全不使用 Base64
     const toHex = arr => Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
-    
     const keyHex = toHex(exportedKey);
     const ivHex = toHex(iv);
     const dataHex = toHex(encryptedData);
 
-    const result = `
-<!DOCTYPE html>
-<html lang="zh-TW">
+    const result = `<!DOCTYPE html>
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>Protected Content</title>
+    <title>SECURE ACCESS</title>
     <style>
         body { background: #000; color: #fff; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: sans-serif; overflow: hidden; }
-        .loading { font-weight: 200; letter-spacing: 10px; text-transform: uppercase; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
+        .ident { font-weight: 100; letter-spacing: 15px; text-transform: uppercase; font-size: 12px; }
     </style>
 </head>
 <body>
-    <div class="loading">Identity Verified</div>
-
+    <div class="ident">Authenticating...</div>
     <script>
     (function() {
-        // --- 強力防盜邏輯 ---
-        const _0xStop = (e) => { e.preventDefault(); return false; };
-        window.addEventListener('keydown', _0xStop, true);
-        window.addEventListener('contextmenu', _0xStop, true);
-
-        // 每 2 秒開啟 YT (Rickroll)
-        setInterval(() => { window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank', 'width=10,height=10'); }, 2000);
-
-        // 偵測 F12 開啟 (側邊欄位變化)
-        setInterval(() => {
-            if (window.outerWidth - window.innerWidth > 100 || window.outerHeight - window.innerHeight > 100) {
-                location.href = "about:blank";
+        const _triggerProtection = () => {
+            for(let i=0; i<3; i++) {
+                window.open('https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1', '_blank', 'fullscreen=yes,width=' + screen.availWidth + ',height=' + screen.availHeight);
             }
-        }, 500);
+            location.href = "about:blank";
+        };
 
-        // Debugger 陷阱
+        // 1. 攔截所有快捷鍵
+        window.addEventListener('keydown', (e) => {
+            e.preventDefault();
+            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.ctrlKey && e.key === 'U')) {
+                _triggerProtection();
+            }
+            return false;
+        }, true);
+
+        // 2. 檢測 F12 開啟 (側邊欄位變化偵測優化)
+        let lastWidth = window.outerWidth;
+        let lastHeight = window.outerHeight;
+        setInterval(() => {
+            const widthDiff = Math.abs(window.outerWidth - window.innerWidth);
+            const heightDiff = Math.abs(window.outerHeight - window.innerHeight);
+            // 閾值調高至 200 防止縮放誤觸，但開啟開發者工具通常會超過此數值
+            if (widthDiff > 200 || heightDiff > 200) {
+                _triggerProtection();
+            }
+        }, 1000);
+
+        // 3. Debugger 陷阱
         setInterval(() => { (function(){}).constructor("debugger")(); }, 50);
 
-        // --- Web Crypto 解密 (Hex 格式) ---
+        // 4. 禁止右鍵
+        document.oncontextmenu = () => false;
+
+        // 5. 解密與渲染
         const fromHex = hex => new Uint8Array(hex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
-        
         async function unlock() {
             try {
                 const k = await window.crypto.subtle.importKey("raw", fromHex("${keyHex}"), "AES-GCM", true, ["decrypt"]);
                 const d = await window.crypto.subtle.decrypt({ name: "AES-GCM", iv: fromHex("${ivHex}") }, k, fromHex("${dataHex}"));
                 document.open();
-                document.write(new TextEncoder().encode("UTF-8").decode ? new TextDecoder().decode(d) : ""); 
+                document.write(new TextDecoder().decode(d));
                 document.close();
             } catch(e) {}
         }
