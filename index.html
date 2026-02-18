@@ -2,112 +2,161 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>CyberShield | 劇毒代碼封裝矩陣</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberShield | Industrial Grade Encryption</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=JetBrains+Mono&display=swap');
-        body { background: #020202; color: #fff; font-family: 'Orbitron', sans-serif; }
-        .glass { background: rgba(255,255,255,0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); }
-        .neon-text { text-shadow: 0 0 10px #4f46e5; }
-        .code-font { font-family: 'JetBrains Mono', monospace; }
-        input, textarea { background: rgba(0,0,0,0.6) !important; border: 1px solid #333 !important; color: #60a5fa !important; }
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;700&family=JetBrains+Mono&display=swap');
+        
+        :root { --primary: #ffffff; --accent: #3b82f6; --bg: #0a0a0a; }
+        body {
+            background-color: var(--bg); color: #fff; font-family: 'Space Grotesk', sans-serif;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        .industrial-panel {
+            background: rgba(15, 15, 15, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+        }
+
+        .code-input {
+            background: #000 !important;
+            border: 1px solid #222 !important;
+            color: #555 !important;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .code-input:focus {
+            border-color: var(--accent) !important;
+            color: var(--accent) !important;
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn-metal {
+            background: var(--primary);
+            color: #000;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            transition: all 0.3s;
+        }
+
+        .btn-metal:hover {
+            background: var(--accent);
+            color: #fff;
+            transform: scale(1.01);
+        }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-6">
+<body class="min-h-screen flex items-center justify-center p-8">
 
-    <div class="max-w-4xl w-full glass p-10 rounded-[3rem] shadow-2xl border-t-indigo-500/50 border-t-2">
-        <header class="text-center mb-10">
-            <h1 class="text-4xl font-black tracking-[0.3em] neon-text">GHOST <span class="text-indigo-500">MATRIX</span></h1>
-            <p class="text-gray-500 text-[10px] mt-2 uppercase tracking-widest">軍規級三層加密 & 十大劇毒防禦陣</p>
+    <div class="max-w-5xl w-full industrial-panel p-16 rounded-0">
+        <header class="mb-16 border-l-4 border-white pl-8">
+            <h1 class="text-6xl font-black tracking-tighter uppercase leading-none">Industrial<br>Encryption</h1>
+            <p class="text-gray-500 text-sm mt-4 tracking-[0.2em] uppercase">AES-256-GCM / Triple Layer / Non-Destructive Defense</p>
         </header>
 
-        <div class="space-y-6">
-            <div>
-                <label class="text-[10px] text-indigo-400 font-bold mb-2 block tracking-widest">INPUT SOURCE CODE</label>
-                <textarea id="sourceInput" class="w-full h-64 p-6 rounded-2xl code-font text-sm outline-none focus:border-indigo-500 transition-all" placeholder="貼上你想要保護的 HTML / JS 代碼..."></textarea>
+        <div class="grid lg:grid-cols-3 gap-12">
+            <div class="lg:col-span-2 space-y-8">
+                <textarea id="srcInput" class="code-input w-full h-80 p-8 text-sm outline-none" placeholder="// PASTE SENSITIVE SOURCE CODE HERE..."></textarea>
+                <button onclick="build()" class="btn-metal w-full py-6 text-sm uppercase">Execute Shield Protocol</button>
             </div>
 
-            <button onclick="generateShield()" class="w-full bg-indigo-600 hover:bg-indigo-500 py-5 rounded-2xl font-bold uppercase tracking-widest text-white shadow-lg shadow-indigo-500/30 transition-all transform active:scale-95">
-                構建幽靈防禦網頁
-            </button>
-
-            <div id="outputPanel" class="hidden animate-pulse">
-                <label class="text-[10px] text-emerald-400 font-bold mb-2 block tracking-widest">ENCRYPTED SHIELD READY</label>
-                <textarea id="outputHtml" class="w-full h-32 p-4 rounded-xl code-font text-[10px] text-gray-500" readonly></textarea>
-                <button onclick="copyCode()" class="w-full mt-4 text-xs text-indigo-400 hover:text-white transition-colors">複製封裝代碼</button>
+            <div class="space-y-6">
+                <div class="border-t border-white/10 pt-4">
+                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Defense Stack</h3>
+                    <ul class="text-[10px] space-y-2 text-gray-400 font-mono">
+                        <li>[01] ANTI-DEBUGGER LOOP</li>
+                        <li>[02] CONSOLE FLOODING</li>
+                        <li>[03] MEMORY OVERLOAD</li>
+                        <li>[04] VIEWPORT LOCK</li>
+                        <li>[05] CONTEXT BLOCK</li>
+                    </ul>
+                </div>
+                <div id="outputBox" class="hidden animate-pulse">
+                    <p class="text-[10px] text-blue-500 mb-2 font-mono">✓ ENCRYPTION_COMPLETE</p>
+                    <textarea id="resHtml" class="w-full h-32 bg-black border border-blue-900/30 p-4 text-[10px] text-blue-900 font-mono" readonly></textarea>
+                    <button onclick="copy()" class="text-[10px] uppercase text-gray-500 mt-2 hover:text-white">Copy Hex Stream</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        const toHex = b => Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join('');
+        const hex = b => Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join('');
 
-        async function generateShield() {
-            const code = document.getElementById('sourceInput').value;
-            if(!code) return;
+        async function build() {
+            const input = document.getElementById('srcInput').value;
+            if(!input) return;
 
-            // --- 劇毒十連發：防禦核心邏輯 (這部分會被加密隱形) ---
-            const poisonLogic = `
-                const _K = {
+            // 十大劇毒：無自毀、純折磨版
+            const defense = `
+                const _D = {
                     s: false,
-                    strike: function(r) {
+                    strike: function() {
                         if(this.s) return; this.s = true;
-                        document.body.innerHTML = "<div style='background:red;color:white;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:sans-serif;'><h1>SECURITY BREACH: " + r + "</h1><p>SYSTEM DESTROYING...</p></div>";
+                        console.clear();
+                        // 1. 無限 Debugger (卡死開發者工具)
                         setInterval(() => { debugger; }, 20);
-                        const b = []; setInterval(() => { b.push(new Uint8Array(10000000)); }, 100);
-                        for(let i=0;i<100;i++) history.pushState(null,null,"#ERR_"+i);
-                        setTimeout(() => { location.replace("about:blank"); }, 2000);
-                        while(true) { console.log("BLOCKED"); }
+                        // 2. 控制台洪水 (卡死渲染線程)
+                        setInterval(() => { console.log("%cSECURITY_VIOLATION", "font-size:50px;color:red;"); }, 10);
+                        // 3. 記憶體吃滿 (緩慢卡頓)
+                        const b = []; setInterval(() => { b.push(new Uint8Array(5000000)); }, 200);
+                        // 4. 歷史紀錄汙染
+                        for(let i=0;i<50;i++) history.pushState(null,null,"#PROTECTED");
+                        // 5. 視覺模糊警告 (不自毀，但讓你看不清內容)
+                        document.body.style.filter = "blur(10px) grayscale(1)";
+                        document.body.style.pointerEvents = "none";
                     }
                 };
-                setInterval(() => { if(window.outerWidth-window.innerWidth > 160 || window.outerHeight-window.innerHeight > 160) _K.strike("DEVTOOLS"); }, 500);
-                document.oncontextmenu = () => { _K.strike("RIGHT_CLICK"); return false; };
-                window.onkeydown = e => { if(e.keyCode==123 || (e.ctrlKey && e.shiftKey && (e.keyCode==73||e.keyCode==74)) || (e.ctrlKey && e.keyCode==85)) _K.strike("SHORTCUT"); };
+                setInterval(() => { if(window.outerWidth-window.innerWidth > 160 || window.outerHeight-window.innerHeight > 160) _D.strike(); }, 500);
+                document.oncontextmenu = () => { _D.strike(); return false; };
+                window.onkeydown = e => { if(e.keyCode==123 || (e.ctrlKey && e.shiftKey && e.keyCode==73)) _D.strike(); };
             `;
 
-            // 1. 生成軍規金鑰 (AES-GCM 256)
             const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
             const rawK = await crypto.subtle.exportKey("raw", key);
             
-            const encrypt = async (data) => {
+            const enc = async (d) => {
                 const iv = crypto.getRandomValues(new Uint8Array(12));
-                const buf = await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, new TextEncoder().encode(data));
-                return { c: toHex(buf), i: toHex(iv) };
+                const b = await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, new TextEncoder().encode(d));
+                return { c: hex(b), i: hex(iv) };
             };
 
-            // 2. 雙重加密 (主內容 + 劇毒邏輯)
-            const mainEnc = await encrypt(code);
-            const poisonEnc = await encrypt(poisonLogic);
+            const m = await enc(input);
+            const p = await enc(defense);
 
-            // 3. 生成幽靈模板
-            const finalTemplate = \`<!DOCTYPE html>
+            const tpl = \`<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><script>
 (async function(){
-    const _H = {m:"\${mainEnc.c}", mi:"\${mainEnc.i}", p:"\${poisonEnc.c}", pi:"\${poisonEnc.i}", k:"\${toHex(rawK)}"};
+    const _H = {m:"\${m.c}", mi:"\${m.i}", p:"\${p.c}", pi:"\${p.i}", k:"\${hex(rawK)}"};
     const _t = h => new Uint8Array(h.match(/.{1,2}/g).map(b => parseInt(b, 16)));
     async function _u() {
         try {
             const k = await crypto.subtle.importKey("raw", _t(_H.k), "AES-GCM", false, ["decrypt"]);
             const d = async (c, i) => new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM", iv:_t(i)}, k, _t(c)));
             eval(await d(_H.p, _H.pi)); 
-            const html = await d(_H.m, _H.mi);
-            document.documentElement.innerHTML = html;
+            document.documentElement.innerHTML = await d(_H.m, _H.mi);
             const sc = document.getElementsByTagName("script");
-            for(let s of sc) { const ns = document.createElement("script"); ns.text = s.text; s.parentNode.replaceChild(ns, s); }
-        } catch(e) { location.replace("about:blank"); }
+            for(let s of sc) { const n = document.createElement("script"); n.text = s.text; s.parentNode.replaceChild(n, s); }
+        } catch(e) {}
     }
     window.onload = _u;
 })();
 <\\/script></head><body style="background:#000"></body></html>\`;
 
-            document.getElementById('outputHtml').value = finalTemplate;
-            document.getElementById('outputPanel').classList.remove('hidden');
+            document.getElementById('resHtml').value = tpl;
+            document.getElementById('outputBox').classList.remove('hidden');
         }
 
-        function copyCode() {
-            document.getElementById('outputHtml').select();
+        function copy() {
+            document.getElementById('resHtml').select();
             document.execCommand('copy');
-            alert('加密防禦網頁已就緒！');
+            alert('PROTOCOL COPIED TO CLIPBOARD');
         }
     </script>
 </body>
