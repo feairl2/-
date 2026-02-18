@@ -2,96 +2,206 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>PRIMAL VAULT | 頂級內容加密</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRIMAL VAULT | 頂級內容加密系統</title>
     <style>
-        :root { --accent: #ffffff; --bg: #000; }
-        body { background: var(--bg); color: #fff; font-family: "Inter", sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-        .box { width: 100%; max-width: 600px; padding: 40px; border: 1px solid #222; text-align: center; }
-        h1 { font-weight: 100; letter-spacing: 10px; text-transform: uppercase; font-size: 20px; margin-bottom: 30px; }
-        textarea { width: 100%; height: 150px; background: #000; border: 1px solid #333; color: #fff; padding: 15px; outline: none; font-size: 12px; margin-bottom: 20px; }
-        .btn { background: #fff; color: #000; border: none; padding: 15px 40px; font-size: 11px; font-weight: bold; letter-spacing: 2px; cursor: pointer; text-transform: uppercase; }
-        .result { margin-top: 30px; display: none; }
+        :root { --primary: #ffffff; --bg: #000000; --accent: #1a1a1a; --font: "Inter", "Helvetica Neue", Arial, sans-serif; }
+        * { box-sizing: border-box; }
+        body { background: var(--bg); color: var(--primary); font-family: var(--font); margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
+        .wrapper { width: 100%; max-width: 800px; padding: 40px; border: 1px solid var(--accent); background: #050505; position: relative; z-index: 10; }
+        .logo { font-weight: 100; letter-spacing: 15px; text-transform: uppercase; font-size: 22px; margin-bottom: 60px; text-align: center; }
+        .input-label { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #444; margin-bottom: 10px; display: block; }
+        textarea { width: 100%; height: 200px; background: transparent; border: 1px solid #222; color: #fff; padding: 20px; outline: none; transition: 0.6s cubic-bezier(0.19, 1, 0.22, 1); font-size: 13px; font-family: "Courier New", monospace; margin-bottom: 30px; line-height: 1.6; }
+        textarea:focus { border-color: #666; box-shadow: 0 0 20px rgba(255,255,255,0.05); }
+        .controls { text-align: right; }
+        .btn { background: var(--primary); color: #000; border: none; padding: 18px 60px; font-size: 11px; font-weight: 900; letter-spacing: 4px; cursor: pointer; text-transform: uppercase; transition: 0.4s; position: relative; overflow: hidden; }
+        .btn:hover { background: #ccc; letter-spacing: 6px; }
+        .btn:active { transform: scale(0.98); }
+        .result-area { margin-top: 60px; display: none; border-top: 1px solid #111; padding-top: 40px; animation: fadeIn 1s forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        #output { height: 120px; color: #555; font-size: 11px; border-color: #111; }
+        .copy-hint { font-size: 9px; color: #333; text-transform: uppercase; margin-top: 10px; cursor: pointer; transition: 0.3s; }
+        .copy-hint:hover { color: #fff; }
+        /* 背景裝飾 */
+        .bg-text { position: absolute; bottom: 20px; left: 20px; font-size: 120px; font-weight: 900; color: #0a0a0a; z-index: -1; user-select: none; }
     </style>
 </head>
 <body>
 
-<div class="box">
-    <h1>Primal Vault</h1>
-    <textarea id="src" placeholder="貼入 HTML 代碼"></textarea>
-    <button class="btn" onclick="encrypt()">Generate encrypted file</button>
-    <div class="result" id="res">
-        <p style="font-size:10px; color:#555;">ENCRYPTED HEX DATA</p>
-        <textarea id="out" readonly onclick="this.select(); document.execCommand('copy');"></textarea>
+<div class="bg-text">PROTECT</div>
+
+<div class="wrapper">
+    <div class="logo">Primal Vault</div>
+    
+    <label class="input-label">Source HTML Document</label>
+    <textarea id="rawInput" placeholder="PASTE YOUR CODE HERE..."></textarea>
+    
+    <div class="controls">
+        <button class="btn" id="generateBtn">Encrypt & Secure</button>
+    </div>
+
+    <div class="result-area" id="resultContainer">
+        <label class="input-label">Encrypted Deployment Code</label>
+        <textarea id="output" readonly></textarea>
+        <div class="copy-hint" onclick="copyResult()">Encryption Successful. Click to copy the secure payload.</div>
     </div>
 </div>
 
 <script>
-async function encrypt() {
-    const raw = document.getElementById('src').value;
-    if(!raw) return;
+// --- Web Crypto API 核心處理 ---
+async function encryptData(text) {
     const encoder = new TextEncoder();
-    const data = encoder.encode(raw);
-    const key = await window.crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
+    const data = encoder.encode(text);
+    
+    // 生成 AES-GCM 密鑰
+    const key = await window.crypto.subtle.generateKey(
+        { name: "AES-GCM", length: 256 },
+        true,
+        ["encrypt", "decrypt"]
+    );
+    
     const iv = window.crypto.getRandomValues(new Uint8Array(12));
-    const encrypted = await window.crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, key, data);
-    const kHex = Array.from(new Uint8Array(await window.crypto.subtle.exportKey("raw", key))).map(b => b.toString(16).padStart(2,'0')).join('');
-    const iHex = Array.from(iv).map(b => b.toString(16).padStart(2,'0')).join('');
-    const dHex = Array.from(new Uint8Array(encrypted)).map(b => b.toString(16).padStart(2,'0')).join('');
+    const encrypted = await window.crypto.subtle.encrypt(
+        { name: "AES-GCM", iv: iv },
+        key,
+        data
+    );
 
-    document.getElementById('out').value = `<!DOCTYPE html>
-<html>
+    // 匯出密鑰為 Hex
+    const exportedKey = await window.crypto.subtle.exportKey("raw", key);
+    
+    return {
+        key: bufToHex(exportedKey),
+        iv: bufToHex(iv),
+        content: bufToHex(new Uint8Array(encrypted))
+    };
+}
+
+function bufToHex(buffer) {
+    return Array.from(new Uint8Array(buffer))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+}
+
+function copyResult() {
+    const el = document.getElementById('output');
+    el.select();
+    document.execCommand('copy');
+    alert('Payload Copied.');
+}
+
+document.getElementById('generateBtn').addEventListener('click', async () => {
+    const source = document.getElementById('rawInput').value;
+    if (!source) return;
+
+    const encrypted = await encryptData(source);
+    
+    // 生成受保護的模板
+    const template = `<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Identity Verified</title>
-    <style>body{background:#000;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;font-family:sans-serif;overflow:hidden;}.l{letter-spacing:10px;opacity:0.5;}</style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Authentication</title>
+    <style>
+        body { background: #000; color: #fff; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; cursor: crosshair; }
+        .msg { letter-spacing: 12px; font-weight: 100; text-transform: uppercase; font-size: 11px; opacity: 0.4; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.6; } }
+    </style>
 </head>
 <body>
-    <div class="l">PROTECTED CONTENT</div>
+    <div class="msg">Establishing Secure Link</div>
     <script>
     (function() {
-        let hasInteracted = false;
-        // 取得彈窗授權：只要使用者點擊頁面任何地方
-        document.addEventListener('click', () => { hasInteracted = true; }, {once: true});
+        // 配置數據 (Hex 格式)
+        const CONFIG = {
+            k: "${encrypted.key}",
+            i: "${encrypted.iv}",
+            c: "${encrypted.content}"
+        };
 
-        const punish = () => {
-            if(hasInteracted) {
-                for(let i=0; i<3; i++) {
-                    window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank', 'width='+screen.width+',height='+screen.height);
+        let active = false;
+        // 關鍵：獲取瀏覽器權限，必須點擊過頁面
+        document.addEventListener('mousedown', () => { active = true; }, { once: true });
+
+        // 懲罰機制：三倍 YT 彈窗
+        const executePunishment = () => {
+            if (active) {
+                for (let i = 0; i < 3; i++) {
+                    window.open('https://www.youtube.com', '_blank', 'width=' + screen.width + ',height=' + screen.height);
                 }
             }
+            // 立即崩潰或重新導向
+            document.body.innerHTML = "";
             location.href = "about:blank";
         };
 
-        // 監控 F12 與快捷鍵
+        // 1. 全鍵盤封鎖 (Prevent All Shortcuts)
         window.addEventListener('keydown', (e) => {
             e.preventDefault();
-            if(e.key==='F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.ctrlKey && e.key==='U')) punish();
+            e.stopPropagation();
+            
+            const isDev = e.key === 'F12' || 
+                         (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || 
+                         (e.ctrlKey && e.key === 'U');
+            
+            if (isDev) executePunishment();
+            return false;
         }, true);
 
-        // 監控視窗變化 (大於 160px 差值判定為開啟 F12)
+        // 2. 視窗大小變動檢測 (針對 F12 彈出)
+        let lastW = window.outerWidth;
+        let lastH = window.outerHeight;
         setInterval(() => {
-            if(window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) punish();
-        }, 500);
+            const wDiff = Math.abs(window.outerWidth - window.innerWidth);
+            const hDiff = Math.abs(window.outerHeight - window.innerHeight);
+            // 閾值偵測
+            if (wDiff > 200 || hDiff > 200) executePunishment();
+        }, 800);
 
-        // Debugger 陷阱
-        setInterval(() => { (function(){}).constructor("debugger")(); }, 50);
+        // 3. Debugger 陷阱：只要開了控制台就卡死
+        (function block() {
+            (function(i) {
+                (function(){ return false; }['constructor']('debugger')['call']());
+            }(0));
+            setTimeout(block, 50);
+        })();
+
+        // 4. 禁用右鍵與拖拽
         document.oncontextmenu = () => false;
+        document.ondragstart = () => false;
 
-        // 解密
-        const h2u = h => new Uint8Array(h.match(/.{1,2}/g).map(b => parseInt(b, 16)));
-        window.onload = async () => {
+        // 5. 解密流程 (Web Crypto API)
+        const hexToBuf = hex => new Uint8Array(hex.match(/.{1,2}/g).map(b => parseInt(b, 16)));
+        
+        async function decryptContent() {
             try {
-                const k = await window.crypto.subtle.importKey("raw", h2u("${kHex}"), "AES-GCM", true, ["decrypt"]);
-                const d = await window.crypto.subtle.decrypt({ name: "AES-GCM", iv: h2u("${iHex}") }, k, h2u("${dHex}"));
-                document.open(); document.write(new TextDecoder().decode(d)); document.close();
-            } catch(e) {}
-        };
+                const key = await window.crypto.subtle.importKey("raw", hexToBuf(CONFIG.k), "AES-GCM", true, ["decrypt"]);
+                const decrypted = await window.crypto.subtle.decrypt(
+                    { name: "AES-GCM", iv: hexToBuf(CONFIG.i) },
+                    key,
+                    hexToBuf(CONFIG.c)
+                );
+                
+                const html = new TextDecoder().decode(decrypted);
+                document.open();
+                document.write(html);
+                document.close();
+            } catch (err) {
+                console.error("Auth Fail");
+            }
+        }
+        
+        // 稍微延遲模擬身份驗證感
+        setTimeout(decryptContent, 1200);
     })();
     <\/script>
 </body>
 </html>`;
-    document.getElementById('res').style.display = 'block';
-}
+
+    document.getElementById('output').value = template;
+    document.getElementById('resultContainer').style.display = 'block';
+});
 </script>
 </body>
 </html>
