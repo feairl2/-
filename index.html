@@ -3,122 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cipher Generator | Instant Decrypt</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Stealth Engine | Pro</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
-        body {
-            background: #0a0a0a;
-            color: #f5f5f5;
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .main-card {
-            background: rgba(23, 23, 23, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(16px);
-            border-radius: 24px;
-            box-shadow: 0 40px 100px -20px rgba(0,0,0,0.7);
-        }
-        .btn-primary {
-            background: #ffffff;
-            color: #000000;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .btn-primary:hover {
-            background: #e5e5e5;
-            transform: translateY(-1px);
-        }
-        .code-area {
-            background: #000000;
-            border: 1px solid #262626;
-            color: #a3a3a3;
-            font-family: 'ui-monospace', monospace;
-        }
-    </style>
-</head>
-<body class="p-6">
-
-    <div class="main-card p-10 w-full max-w-xl">
-        <div class="mb-10 text-center">
-            <h1 class="text-2xl font-semibold tracking-tight text-white mb-2">極速加密器</h1>
-            <p class="text-neutral-500 text-sm">輸入內容，生成「秒開」的加密網頁</p>
-        </div>
-
-        <div id="ui-creator">
-            <textarea id="raw" class="w-full h-44 bg-neutral-900/50 border border-neutral-800 rounded-xl p-4 text-white placeholder-neutral-600 focus:outline-none focus:border-white/20 transition-all mb-6" placeholder="輸入你想隱藏的文字..."></textarea>
-            <button onclick="build()" class="btn-primary w-full py-4 rounded-xl font-semibold uppercase tracking-widest text-sm">生成成品代碼</button>
-        </div>
-
-        <div id="ui-result" class="hidden">
-            <textarea id="result-code" readonly class="code-area w-full h-44 rounded-xl p-4 text-xs mb-4" onclick="this.select()"></textarea>
-            <div class="flex gap-3">
-                <button onclick="copy()" class="flex-1 py-3 bg-neutral-800 hover:bg-neutral-700 rounded-xl text-sm font-medium transition-all">一鍵複製</button>
-                <button onclick="location.reload()" class="px-6 py-3 border border-neutral-800 rounded-xl text-sm text-neutral-400">重置</button>
-            </div>
-        </div>
-    </div>
-
-<script>
-    const SALT = "SILENT_KEY_PRO_99"; // 固定內置密鑰
-
-    async function build() {
-        const text = document.getElementById('raw').value;
-        if(!text) return;
-
-        const enc = new TextEncoder();
-        const iv = crypto.getRandomValues(new Uint8Array(12));
-        const key = await crypto.subtle.importKey("raw", enc.encode(SALT.padEnd(32)), "AES-GCM", false, ["encrypt"]);
-        const cipher = await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, enc.encode(text));
-        
-        const combined = new Uint8Array(iv.length + cipher.byteLength);
-        combined.set(iv, 0); combined.set(new Uint8Array(cipher), 12);
-        const payload = btoa(String.fromCharCode(...combined));
-
-        const template = `<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <title>Secured Document</title>
-    <script src="https://cdn.tailwindcss.com"><\/script>
-    <style>
-        body { background: #000; color: #fff; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; font-family: sans-serif; }
-        #o { opacity: 0; transition: opacity 0.4s ease-in; line-height: 1.6; }
-        .card { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 2.5rem; border-radius: 1.5rem; max-width: 600px; width: 90%; }
+        /* 極簡黑暗美學 - 不需要外部 CSS */
+        body { background: #000; color: #ccc; font-family: -apple-system, system-ui, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        .card { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 40px; border-radius: 24px; width: 100%; max-width: 500px; box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
+        h1 { color: #fff; font-size: 24px; font-weight: 600; margin: 0 0 8px 0; letter-spacing: -0.5px; }
+        p { font-size: 13px; color: #666; margin-bottom: 30px; }
+        textarea { width: 100%; height: 160px; background: #050505; border: 1px solid #222; border-radius: 12px; color: #eee; padding: 15px; box-sizing: border-box; font-size: 14px; outline: none; transition: 0.3s; resize: none; }
+        textarea:focus { border-color: #444; }
+        .btn { width: 100%; padding: 16px; background: #fff; color: #000; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; margin-top: 20px; transition: 0.2s; font-size: 14px; }
+        .btn:hover { background: #ddd; transform: translateY(-1px); }
+        .btn-copy { background: #1a1a1a; color: #fff; border: 1px solid #333; margin-top: 10px; }
+        .hidden { display: none; }
+        .success-tag { color: #22c55e; font-size: 12px; font-weight: 600; text-transform: uppercase; margin-bottom: 8px; display: block; }
     </style>
 </head>
 <body>
-    <div class="card"><div id="o"></div></div>
+
+<div class="card">
+    <div id="ui-1">
+        <h1>Stealth Engine</h1>
+        <p>輸入訊息，生成無特徵純數字加密網頁</p>
+        <textarea id="raw" placeholder="在此輸入私密內容..."></textarea>
+        <button class="btn" onclick="generate()">生成完整代碼</button>
+    </div>
+
+    <div id="ui-2" class="hidden">
+        <span class="success-tag">✓ 代碼生成成功</span>
+        <h1>已就緒</h1>
+        <p>複製下方代碼並儲存為新的 .html 檔案</p>
+        <textarea id="output" readonly onclick="this.select()"></textarea>
+        <button class="btn" onclick="copy()">一鍵複製 HTML</button>
+        <button class="btn btn-copy" onclick="location.reload()">重新開始</button>
+    </div>
+</div>
+
+<script>
+    async function generate() {
+        const text = document.getElementById('raw').value;
+        if(!text) return;
+
+        // 生成動態 Key
+        const salt = Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b => b.toString(16).padStart(2, '0')).join('');
+        const enc = new TextEncoder();
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const key = await crypto.subtle.importKey("raw", enc.encode(salt.padEnd(32)), "AES-GCM", false, ["encrypt"]);
+        const cipher = await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, enc.encode(text));
+        
+        // 將 IV 與密文合併為數字陣列
+        const combined = JSON.stringify([...iv, ...new Uint8Array(cipher)]);
+
+        // 核心模板：修正引號與資源依賴
+        const template = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encrypted Content</title>
+    <style>
+        body { background:#000; color:#d1d1d1; display:flex; align-items:center; justify-content:center; height:100vh; margin:0; font-family:system-ui,-apple-system,sans-serif; }
+        .c { max-width:600px; width:85%; opacity:0; transition:opacity 0.8s; line-height:1.7; font-size:18px; border-left:2px solid #333; padding-left:24px; }
+    </style>
+</head>
+<body>
+    <div id="o" class="c"></div>
     <script>
         (async () => {
+            const _d = [${combined}];
+            const _k = "${salt}";
             try {
-                const p = "${payload}", s = "${SALT}";
-                const c = Uint8Array.from(atob(p), x => x.charCodeAt(0));
-                const k = await crypto.subtle.importKey("raw", new TextEncoder().encode(s.padEnd(32)), "AES-GCM", false, ["decrypt"]);
-                const d = await crypto.subtle.decrypt({name:"AES-GCM", iv: c.slice(0, 12)}, k, c.slice(12));
-                const res = new TextDecoder().decode(d);
-                const el = document.getElementById('o');
-                el.innerHTML = res;
-                el.style.opacity = "1";
-            } catch(e) { document.body.innerHTML = "Access Denied"; }
+                const u = new Uint8Array(_d);
+                const k = await crypto.subtle.importKey("raw", new TextEncoder().encode(_k.padEnd(32)), "AES-GCM", false, ["decrypt"]);
+                const r = await crypto.subtle.decrypt({name:"AES-GCM", iv: u.slice(0,12)}, k, u.slice(12));
+                const el = document.getElementById("o");
+                el.innerHTML = new TextDecoder().decode(r);
+                el.style.opacity = 1;
+            } catch(e) { console.error(e); }
         })();
     <\/script>
 </body>
 </html>`;
 
-        document.getElementById('ui-creator').classList.add('hidden');
-        document.getElementById('ui-result').classList.remove('hidden');
-        document.getElementById('result-code').value = template;
+        document.getElementById('ui-1').classList.add('hidden');
+        const ui2 = document.getElementById('ui-2');
+        ui2.classList.remove('hidden');
+        document.getElementById('output').value = template;
     }
 
     function copy() {
-        document.getElementById('result-code').select();
+        const out = document.getElementById('output');
+        out.select();
         document.execCommand('copy');
-        alert("代碼已複製！");
+        alert("已複製！請將內容貼到空白的 .txt 檔，並更名為 .html");
     }
 </script>
+
 </body>
 </html>
