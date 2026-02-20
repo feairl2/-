@@ -3,237 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantum Cipher | 極致安全加密</title>
+    <title>Cipher Generator | Instant Decrypt</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root {
-            --bg: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --primary: #38bdf8;
-            --secondary: #818cf8;
-            --text: #f1f5f9;
-            --accent: #22d3ee;
-        }
-
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
         body {
-            background-color: var(--bg);
-            background-image: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
-            color: var(--text);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            background: #0a0a0a;
+            color: #f5f5f5;
+            font-family: 'Inter', sans-serif;
             min-height: 100vh;
-            margin: 0;
-            overflow-x: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-
-        /* 磨砂玻璃容器 */
-        .glass-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .main-card {
+            background: rgba(23, 23, 23, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(16px);
             border-radius: 24px;
-            padding: 40px;
-            width: 100%;
-            max-width: 500px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.8s ease-out;
+            box-shadow: 0 40px 100px -20px rgba(0,0,0,0.7);
         }
-
-        h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -0.5px;
+        .btn-primary {
+            background: #ffffff;
+            color: #000000;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
-        .subtitle {
-            color: #94a3b8;
-            font-size: 0.85rem;
-            margin-bottom: 30px;
+        .btn-primary:hover {
+            background: #e5e5e5;
+            transform: translateY(-1px);
         }
-
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--primary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        input, textarea {
-            width: 100%;
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 14px;
-            color: white;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            box-sizing: border-box;
-            outline: none;
-        }
-
-        input:focus, textarea:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
-        }
-
-        textarea {
-            height: 120px;
-            resize: none;
-            line-height: 1.5;
-        }
-
-        .actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 25px;
-        }
-
-        button {
-            padding: 12px;
-            border-radius: 12px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 0.95rem;
-        }
-
-        .btn-encrypt {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: #0f172a;
-        }
-
-        .btn-decrypt {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            filter: brightness(1.1);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-        }
-
-        button:active { transform: translateY(0); }
-
-        .result-container {
-            margin-top: 30px;
-            padding-top: 25px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        #output {
-            background: rgba(34, 211, 238, 0.05);
-            color: var(--accent);
-            border: 1px dashed rgba(34, 211, 238, 0.3);
-            cursor: pointer;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .copy-hint {
-            text-align: center;
-            font-size: 0.75rem;
-            color: #64748b;
-            margin-top: 10px;
+        .code-area {
+            background: #000000;
+            border: 1px solid #262626;
+            color: #a3a3a3;
+            font-family: 'ui-monospace', monospace;
         }
     </style>
 </head>
-<body>
+<body class="p-6">
 
-<div class="glass-card">
-    <h1>Quantum Cipher</h1>
-    <p class="subtitle">Military-grade AES-256 encryption</p>
+    <div class="main-card p-10 w-full max-w-xl">
+        <div class="mb-10 text-center">
+            <h1 class="text-2xl font-semibold tracking-tight text-white mb-2">極速加密器</h1>
+            <p class="text-neutral-500 text-sm">輸入內容，生成「秒開」的加密網頁</p>
+        </div>
 
-    <div class="input-group">
-        <label>Access Key</label>
-        <input type="password" id="pw" placeholder="••••••••••••">
+        <div id="ui-creator">
+            <textarea id="raw" class="w-full h-44 bg-neutral-900/50 border border-neutral-800 rounded-xl p-4 text-white placeholder-neutral-600 focus:outline-none focus:border-white/20 transition-all mb-6" placeholder="輸入你想隱藏的文字..."></textarea>
+            <button onclick="build()" class="btn-primary w-full py-4 rounded-xl font-semibold uppercase tracking-widest text-sm">生成成品代碼</button>
+        </div>
+
+        <div id="ui-result" class="hidden">
+            <textarea id="result-code" readonly class="code-area w-full h-44 rounded-xl p-4 text-xs mb-4" onclick="this.select()"></textarea>
+            <div class="flex gap-3">
+                <button onclick="copy()" class="flex-1 py-3 bg-neutral-800 hover:bg-neutral-700 rounded-xl text-sm font-medium transition-all">一鍵複製</button>
+                <button onclick="location.reload()" class="px-6 py-3 border border-neutral-800 rounded-xl text-sm text-neutral-400">重置</button>
+            </div>
+        </div>
     </div>
-
-    <div class="input-group">
-        <label>Source Content</label>
-        <textarea id="raw" placeholder="Enter text to encrypt or decrypt..."></textarea>
-    </div>
-
-    <div class="actions">
-        <button class="btn-encrypt" onclick="process(true)">ENCRYPT</button>
-        <button class="btn-decrypt" onclick="process(false)">DECRYPT</button>
-    </div>
-
-    <div class="result-container">
-        <label>Output</label>
-        <textarea id="output" readonly onclick="copy()" placeholder="Result will appear here..."></textarea>
-        <p class="copy-hint">Click the output box to copy</p>
-    </div>
-</div>
 
 <script>
-    async function deriveKey(pw, salt) {
-        const enc = new TextEncoder();
-        const baseKey = await crypto.subtle.importKey("raw", enc.encode(pw), "PBKDF2", false, ["deriveKey"]);
-        return crypto.subtle.deriveKey(
-            { name: "PBKDF2", salt, iterations: 100000, hash: "SHA-256" },
-            baseKey, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]
-        );
-    }
+    const SALT = "SILENT_KEY_PRO_99"; // 固定內置密鑰
 
-    async function process(isEnc) {
-        const pw = document.getElementById('pw').value;
+    async function build() {
         const text = document.getElementById('raw').value;
-        const out = document.getElementById('output');
-        
-        if(!pw || !text) return;
+        if(!text) return;
 
-        try {
-            if(isEnc) {
-                const salt = crypto.getRandomValues(new Uint8Array(16));
-                const iv = crypto.getRandomValues(new Uint8Array(12));
-                const key = await deriveKey(pw, salt);
-                const enc = await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, new TextEncoder().encode(text));
-                
-                const combined = new Uint8Array(salt.length + iv.length + enc.byteLength);
-                combined.set(salt, 0); combined.set(iv, 16); combined.set(new Uint8Array(enc), 28);
-                out.value = btoa(String.fromCharCode(...combined));
-            } else {
-                const combined = Uint8Array.from(atob(text), c => c.charCodeAt(0));
-                const salt = combined.slice(0, 16), iv = combined.slice(16, 28), data = combined.slice(28);
-                const key = await deriveKey(pw, salt);
-                const dec = await crypto.subtle.decrypt({name:"AES-GCM", iv}, key, data);
-                out.value = new TextDecoder().decode(dec);
-            }
-        } catch(e) {
-            alert("❌ Invalid Key or Payload");
-        }
+        const enc = new TextEncoder();
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const key = await crypto.subtle.importKey("raw", enc.encode(SALT.padEnd(32)), "AES-GCM", false, ["encrypt"]);
+        const cipher = await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, enc.encode(text));
+        
+        const combined = new Uint8Array(iv.length + cipher.byteLength);
+        combined.set(iv, 0); combined.set(new Uint8Array(cipher), 12);
+        const payload = btoa(String.fromCharCode(...combined));
+
+        const template = `<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>Secured Document</title>
+    <script src="https://cdn.tailwindcss.com"><\/script>
+    <style>
+        body { background: #000; color: #fff; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; font-family: sans-serif; }
+        #o { opacity: 0; transition: opacity 0.4s ease-in; line-height: 1.6; }
+        .card { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 2.5rem; border-radius: 1.5rem; max-width: 600px; width: 90%; }
+    </style>
+</head>
+<body>
+    <div class="card"><div id="o"></div></div>
+    <script>
+        (async () => {
+            try {
+                const p = "${payload}", s = "${SALT}";
+                const c = Uint8Array.from(atob(p), x => x.charCodeAt(0));
+                const k = await crypto.subtle.importKey("raw", new TextEncoder().encode(s.padEnd(32)), "AES-GCM", false, ["decrypt"]);
+                const d = await crypto.subtle.decrypt({name:"AES-GCM", iv: c.slice(0, 12)}, k, c.slice(12));
+                const res = new TextDecoder().decode(d);
+                const el = document.getElementById('o');
+                el.innerHTML = res;
+                el.style.opacity = "1";
+            } catch(e) { document.body.innerHTML = "Access Denied"; }
+        })();
+    <\/script>
+</body>
+</html>`;
+
+        document.getElementById('ui-creator').classList.add('hidden');
+        document.getElementById('ui-result').classList.remove('hidden');
+        document.getElementById('result-code').value = template;
     }
 
     function copy() {
-        const el = document.getElementById('output');
-        if(!el.value) return;
-        el.select();
+        document.getElementById('result-code').select();
         document.execCommand('copy');
-        const original = el.style.borderColor;
-        el.style.borderColor = "#38bdf8";
-        setTimeout(() => el.style.borderColor = original, 1000);
+        alert("代碼已複製！");
     }
 </script>
-
 </body>
 </html>
