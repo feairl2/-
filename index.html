@@ -3,101 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stealth Engine | Pro</title>
+    <title>SCRYPT // SILENT_DEPLOY</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 極簡黑暗美學 - 不需要外部 CSS */
-        body { background: #000; color: #ccc; font-family: -apple-system, system-ui, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
-        .card { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 40px; border-radius: 24px; width: 100%; max-width: 500px; box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
-        h1 { color: #fff; font-size: 24px; font-weight: 600; margin: 0 0 8px 0; letter-spacing: -0.5px; }
-        p { font-size: 13px; color: #666; margin-bottom: 30px; }
-        textarea { width: 100%; height: 160px; background: #050505; border: 1px solid #222; border-radius: 12px; color: #eee; padding: 15px; box-sizing: border-box; font-size: 14px; outline: none; transition: 0.3s; resize: none; }
-        textarea:focus { border-color: #444; }
-        .btn { width: 100%; padding: 16px; background: #fff; color: #000; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; margin-top: 20px; transition: 0.2s; font-size: 14px; }
-        .btn:hover { background: #ddd; transform: translateY(-1px); }
-        .btn-copy { background: #1a1a1a; color: #fff; border: 1px solid #333; margin-top: 10px; }
-        .hidden { display: none; }
-        .success-tag { color: #22c55e; font-size: 12px; font-weight: 600; text-transform: uppercase; margin-bottom: 8px; display: block; }
+        body { background: #080808; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+        .bento { background: #0d0d0d; border: 1px solid #1a1a1a; box-shadow: inset 0 1px 1px rgba(255,255,255,0.02); }
+        textarea { resize: none; color: #888; transition: color 0.3s; }
+        textarea:focus { color: #fff; outline: none; }
+        .copy-trigger { cursor: pointer; transition: all 0.2s; }
+        .copy-trigger:active { transform: translateY(2px); filter: brightness(1.2); }
     </style>
 </head>
-<body>
+<body class="min-h-screen flex items-center justify-center p-8">
 
-<div class="card">
-    <div id="ui-1">
-        <h1>Stealth Engine</h1>
-        <p>輸入訊息，生成無特徵純數字加密網頁</p>
-        <textarea id="raw" placeholder="在此輸入私密內容..."></textarea>
-        <button class="btn" onclick="generate()">生成完整代碼</button>
+    <div class="w-full max-w-5xl">
+        <div class="flex items-center gap-3 mb-8">
+            <div class="w-3 h-3 bg-white rounded-full"></div>
+            <h1 class="text-white font-bold tracking-widest text-sm">ENCRYPTED_DEPLOYMENT_TOOL</h1>
+        </div>
+
+        <div class="grid grid-cols-12 gap-6">
+            <div class="col-span-12 lg:col-span-9 bento rounded-xl p-1">
+                <textarea id="raw" placeholder="// DROP YOUR HTML CODE HERE..." class="w-full h-[500px] p-6 bg-transparent text-sm leading-relaxed"></textarea>
+            </div>
+
+            <div class="col-span-12 lg:col-span-3 space-y-6">
+                <div class="bento rounded-xl p-6">
+                    <div class="text-[10px] text-zinc-600 mb-4 tracking-widest uppercase">Protocol</div>
+                    <p class="text-xs text-zinc-400 leading-relaxed">
+                        原生 WebCrypto AES-GCM 模式。密鑰將被切片並自動注入。解碼過程對用戶透明。
+                    </p>
+                </div>
+
+                <div onclick="generateAndCopy()" class="copy-trigger bg-white rounded-xl p-6 flex flex-col items-center justify-center text-black">
+                    <span class="text-[10px] font-bold tracking-widest uppercase mb-1">Execute</span>
+                    <span class="font-bold">加密並複製代碼</span>
+                </div>
+
+                <div id="log" class="text-[10px] text-zinc-700 font-mono break-all leading-tight">
+                    SYSTEM_READY...<br>AWAITING_INPUT
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div id="ui-2" class="hidden">
-        <span class="success-tag">✓ 代碼生成成功</span>
-        <h1>已就緒</h1>
-        <p>複製下方代碼並儲存為新的 .html 檔案</p>
-        <textarea id="output" readonly onclick="this.select()"></textarea>
-        <button class="btn" onclick="copy()">一鍵複製 HTML</button>
-        <button class="btn btn-copy" onclick="location.reload()">重新開始</button>
-    </div>
-</div>
-
-<script>
-    async function generate() {
-        const text = document.getElementById('raw').value;
-        if(!text) return;
-
-        // 生成動態 Key
-        const salt = Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b => b.toString(16).padStart(2, '0')).join('');
-        const enc = new TextEncoder();
-        const iv = crypto.getRandomValues(new Uint8Array(12));
-        const key = await crypto.subtle.importKey("raw", enc.encode(salt.padEnd(32)), "AES-GCM", false, ["encrypt"]);
-        const cipher = await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, enc.encode(text));
-        
-        // 將 IV 與密文合併為數字陣列
-        const combined = JSON.stringify([...iv, ...new Uint8Array(cipher)]);
-
-        // 核心模板：修正引號與資源依賴
-        const template = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encrypted Content</title>
-    <style>
-        body { background:#000; color:#d1d1d1; display:flex; align-items:center; justify-content:center; height:100vh; margin:0; font-family:system-ui,-apple-system,sans-serif; }
-        .c { max-width:600px; width:85%; opacity:0; transition:opacity 0.8s; line-height:1.7; font-size:18px; border-left:2px solid #333; padding-left:24px; }
-    </style>
-</head>
-<body>
-    <div id="o" class="c"></div>
     <script>
-        (async () => {
-            const _d = [${combined}];
-            const _k = "${salt}";
+        async function generateAndCopy() {
+            const content = document.getElementById('raw').value;
+            const log = document.getElementById('log');
+            if (!content) return;
+
             try {
-                const u = new Uint8Array(_d);
-                const k = await crypto.subtle.importKey("raw", new TextEncoder().encode(_k.padEnd(32)), "AES-GCM", false, ["decrypt"]);
-                const r = await crypto.subtle.decrypt({name:"AES-GCM", iv: u.slice(0,12)}, k, u.slice(12));
-                const el = document.getElementById("o");
-                el.innerHTML = new TextDecoder().decode(r);
-                el.style.opacity = 1;
-            } catch(e) { console.error(e); }
-        })();
-    <\/script>
-</body>
-</html>`;
+                const enc = new TextEncoder();
+                const key = await crypto.subtle.generateKey({name: "AES-GCM", length: 256}, true, ["encrypt", "decrypt"]);
+                const iv = crypto.getRandomValues(new Uint8Array(12));
+                const encrypted = await crypto.subtle.encrypt({name: "AES-GCM", iv}, key, enc.encode(content));
+                const exportedKey = await crypto.subtle.exportKey("raw", key);
 
-        document.getElementById('ui-1').classList.add('hidden');
-        const ui2 = document.getElementById('ui-2');
-        ui2.classList.remove('hidden');
-        document.getElementById('output').value = template;
-    }
+                const data = {
+                    i: btoa(String.fromCharCode(...iv)),
+                    k: btoa(String.fromCharCode(...new Uint8Array(exportedKey))),
+                    d: btoa(String.fromCharCode(...new Uint8Array(encrypted)))
+                };
 
-    function copy() {
-        const out = document.getElementById('output');
-        out.select();
-        document.execCommand('copy');
-        alert("已複製！請將內容貼到空白的 .txt 檔，並更名為 .html");
-    }
-</script>
+                const template = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body><script>const _0x= ${JSON.stringify(data)};(async()=>{const k=Uint8Array.from(atob(_0x.k),c=>c.charCodeAt(0)),v=Uint8Array.from(atob(_0x.i),c=>c.charCodeAt(0)),d=Uint8Array.from(atob(_0x.d),c=>c.charCodeAt(0)),sk=await crypto.subtle.importKey("raw",k,"AES-GCM",false,["decrypt"]),dec=await crypto.subtle.decrypt({name:"AES-GCM",iv:v},sk,d);document.open();document.write(new TextDecoder().decode(dec));document.close()})()<\/script></body></html>`;
 
+                await navigator.clipboard.writeText(template);
+                log.innerHTML = "STATUS_SUCCESS<br>PAYLOAD_COPIED_TO_CLIPBOARD<br>TIMESTAMP: " + Date.now();
+                log.style.color = "#fff";
+            } catch (err) {
+                log.innerText = "CRITICAL_ERROR: " + err.message;
+                log.style.color = "#ff0000";
+            }
+        }
+    </script>
 </body>
 </html>
