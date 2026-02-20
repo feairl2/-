@@ -3,266 +3,237 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PRIMAL VAULT | 核心安全部署系統</title>
+    <title>Quantum Cipher | 極致安全加密</title>
     <style>
-        /* PRIMAL VAULT - 品牌設計語言
-           採用大品牌官網常用的高對比度、極簡無襯線字體與寬闊布局
-        */
         :root {
-            --bg: #000000;
-            --surface: #0a0a0a;
-            --accent: #ffffff;
-            --border: #1a1a1a;
-            --text-main: #ffffff;
-            --text-dim: #444444;
-            --success: #228b22;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --primary: #38bdf8;
+            --secondary: #818cf8;
+            --text: #f1f5f9;
+            --accent: #22d3ee;
         }
-
-        * { box-sizing: border-box; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #222; }
 
         body {
             background-color: var(--bg);
-            color: var(--text-main);
-            font-family: "Inter", -apple-system, system-ui, sans-serif;
-            margin: 0;
+            background-image: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
+            color: var(--text);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             min-height: 100vh;
-            overflow: hidden;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 900px;
-            padding: 100px 80px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            position: relative;
-            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .header-unit {
-            text-align: center;
-            margin-bottom: 80px;
-        }
-
-        .header-unit h1 {
-            font-weight: 100;
-            font-size: 32px;
-            letter-spacing: 20px;
-            text-transform: uppercase;
             margin: 0;
-            color: var(--accent);
+            overflow-x: hidden;
         }
 
-        .header-unit p {
-            font-size: 10px;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 6px;
-            margin-top: 20px;
+        /* 磨砂玻璃容器 */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.8s ease-out;
         }
 
-        .editor-section {
-            margin-bottom: 50px;
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
         }
 
-        .editor-section label {
+        .subtitle {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
             display: block;
-            font-size: 9px;
-            color: var(--text-dim);
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--primary);
             text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        input, textarea {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 14px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
         }
 
         textarea {
-            width: 100%;
-            height: 320px;
-            background: #000;
-            border: 1px solid #1a1a1a;
-            color: #999;
-            padding: 30px;
-            outline: none;
-            font-size: 14px;
-            font-family: "SF Mono", "Fira Code", monospace;
-            transition: all 0.5s ease;
+            height: 120px;
             resize: none;
-            line-height: 1.7;
+            line-height: 1.5;
         }
 
-        textarea:focus {
-            border-color: #333;
-            color: #fff;
-            box-shadow: 0 0 40px rgba(255,255,255,0.02);
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 25px;
         }
 
-        .btn-trigger {
-            background: var(--accent);
-            color: #000;
+        button {
+            padding: 12px;
+            border-radius: 12px;
             border: none;
-            padding: 22px 100px;
-            font-size: 12px;
-            font-weight: 900;
-            letter-spacing: 6px;
-            text-transform: uppercase;
+            font-weight: 600;
             cursor: pointer;
-            transition: 0.4s;
-            display: block;
-            margin: 0 auto;
+            transition: all 0.2s;
+            font-size: 0.95rem;
         }
 
-        .btn-trigger:hover {
-            background: #cccccc;
-            letter-spacing: 8px;
+        .btn-encrypt {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #0f172a;
+        }
+
+        .btn-decrypt {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        button:hover {
             transform: translateY(-2px);
+            filter: brightness(1.1);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
         }
 
-        #result-display {
-            margin-top: 80px;
-            display: none;
-            border-top: 1px solid #111;
-            padding-top: 60px;
-            animation: fadeIn 1.2s ease forwards;
+        button:active { transform: translateY(0); }
+
+        .result-container {
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #output {
+            background: rgba(34, 211, 238, 0.05);
+            color: var(--accent);
+            border: 1px dashed rgba(34, 211, 238, 0.3);
+            cursor: pointer;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .output-status {
-            font-size: 10px;
-            color: var(--success);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 20px;
+        .copy-hint {
             text-align: center;
-        }
-
-        #final-payload {
-            height: 120px;
-            background: #050505;
-            color: #222;
-            border-color: #0f0f0f;
-            font-size: 11px;
-            cursor: crosshair;
-        }
-
-        .legal-notice {
-            position: absolute;
-            bottom: 30px;
-            left: 0;
-            width: 100%;
-            text-align: center;
-            font-size: 8px;
-            color: #1a1a1a;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header-unit">
-        <h1>Primal Vault</h1>
-        <p>Advanced Encryption Standard Protocol</p>
+<div class="glass-card">
+    <h1>Quantum Cipher</h1>
+    <p class="subtitle">Military-grade AES-256 encryption</p>
+
+    <div class="input-group">
+        <label>Access Key</label>
+        <input type="password" id="pw" placeholder="••••••••••••">
     </div>
 
-    <div class="editor-section">
-        <label>Configuration Source</label>
-        <textarea id="srcInput" placeholder="// ENTER SECURE CODE"></textarea>
+    <div class="input-group">
+        <label>Source Content</label>
+        <textarea id="raw" placeholder="Enter text to encrypt or decrypt..."></textarea>
     </div>
 
-    <button class="btn-trigger" onclick="runSeal()">Generate Payload</button>
-
-    <div id="result-display">
-        <div class="output-status">MIL-SPEC 256-GCM Active</div>
-        <textarea id="final-payload" readonly onclick="copyData()"></textarea>
+    <div class="actions">
+        <button class="btn-encrypt" onclick="process(true)">ENCRYPT</button>
+        <button class="btn-decrypt" onclick="process(false)">DECRYPT</button>
     </div>
 
-    <div class="legal-notice">MIL-STD-188 compliant encryption module</div>
+    <div class="result-container">
+        <label>Output</label>
+        <textarea id="output" readonly onclick="copy()" placeholder="Result will appear here..."></textarea>
+        <p class="copy-hint">Click the output box to copy</p>
+    </div>
 </div>
 
 <script>
-    // 核心加密邏輯與 Hex 轉換
-    const b2h = b => Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2,'0')).join('');
-    const s2h = s => b2h(new TextEncoder().encode(s));
-
-    async function runSeal() {
-        const val = document.getElementById('srcInput').value;
-        if (!val) return;
-
-        // --- 原本的 Web Crypto API 流程 ---
-        const key = await window.crypto.subtle.generateKey(
-            { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]
+    async function deriveKey(pw, salt) {
+        const enc = new TextEncoder();
+        const baseKey = await crypto.subtle.importKey("raw", enc.encode(pw), "PBKDF2", false, ["deriveKey"]);
+        return crypto.subtle.deriveKey(
+            { name: "PBKDF2", salt, iterations: 100000, hash: "SHA-256" },
+            baseKey, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]
         );
-        const iv = window.crypto.getRandomValues(new Uint8Array(12));
-        const encrypted = await window.crypto.subtle.encrypt(
-            { name: "AES-GCM", iv: iv }, key, new TextEncoder().encode(val)
-        );
-
-        const kh = b2h(await window.crypto.subtle.exportKey("raw", key));
-        const ih = b2h(iv);
-        const dh = b2h(encrypted);
-
-        // --- 防禦邏輯混淆封裝 ---
-        const defense = `
-            const _cl = () => { document.body.innerHTML = ""; location.replace("about:blank"); };
-            window.addEventListener('keydown', (e) => {
-                if (e.ctrlKey && e.shiftKey) { e.preventDefault(); _cl(); }
-                if (e.key === 'F12' || (e.ctrlKey && e.key.toLowerCase() === 'u')) { e.preventDefault(); _cl(); }
-            }, true);
-            setInterval(() => {
-                if(window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) _cl();
-            }, 400);
-            const _dbg = () => { (function(){}).constructor("debugger")(); };
-            setInterval(_dbg, 50);
-            document.oncontextmenu = () => false;
-        `;
-        const gh = s2h(defense);
-
-        // --- 生成最終受保護的 HTML ---
-        const final = \`<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <script>
-    (function(){
-        const _h2b = h => new Uint8Array(h.match(/.{1,2}/g).map(b => parseInt(b, 16)));
-        const _dec = b => new TextDecoder().decode(b);
-        
-        // 1. 隱形執行混淆過的防禦腳本
-        try { new Function(_dec(_h2b("\${gh}")))(); } catch(e){}
-
-        // 2. 原生 Crypto API 解密流程
-        window.onload = async () => {
-            try {
-                const k = await window.crypto.subtle.importKey("raw", _h2b("\${kh}"), "AES-GCM", true, ["decrypt"]);
-                const d = await window.crypto.subtle.decrypt({name:"AES-GCM", iv:_h2b("\${ih}")}, k, _h2b("\${dh}"));
-                document.open(); document.write(_dec(d)); document.close();
-            } catch(e) { document.body.innerHTML = ""; }
-        };
-    })();
-    <\/script>
-</head>
-<body style="background:#000;"></body>
-</html>\`;
-
-        document.getElementById('final-payload').value = final;
-        document.getElementById('result-display').style.display = 'block';
     }
 
-    function copyData() {
-        const el = document.getElementById("final-payload");
+    async function process(isEnc) {
+        const pw = document.getElementById('pw').value;
+        const text = document.getElementById('raw').value;
+        const out = document.getElementById('output');
+        
+        if(!pw || !text) return;
+
+        try {
+            if(isEnc) {
+                const salt = crypto.getRandomValues(new Uint8Array(16));
+                const iv = crypto.getRandomValues(new Uint8Array(12));
+                const key = await deriveKey(pw, salt);
+                const enc = await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, new TextEncoder().encode(text));
+                
+                const combined = new Uint8Array(salt.length + iv.length + enc.byteLength);
+                combined.set(salt, 0); combined.set(iv, 16); combined.set(new Uint8Array(enc), 28);
+                out.value = btoa(String.fromCharCode(...combined));
+            } else {
+                const combined = Uint8Array.from(atob(text), c => c.charCodeAt(0));
+                const salt = combined.slice(0, 16), iv = combined.slice(16, 28), data = combined.slice(28);
+                const key = await deriveKey(pw, salt);
+                const dec = await crypto.subtle.decrypt({name:"AES-GCM", iv}, key, data);
+                out.value = new TextDecoder().decode(dec);
+            }
+        } catch(e) {
+            alert("❌ Invalid Key or Payload");
+        }
+    }
+
+    function copy() {
+        const el = document.getElementById('output');
+        if(!el.value) return;
         el.select();
-        document.execCommand("copy");
-        alert("Encrypted Segment Stored.");
+        document.execCommand('copy');
+        const original = el.style.borderColor;
+        el.style.borderColor = "#38bdf8";
+        setTimeout(() => el.style.borderColor = original, 1000);
     }
 </script>
+
 </body>
 </html>
