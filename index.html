@@ -3,180 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SCRYPT // 協議編碼器 V3</title>
+    <title>SCRYPT // OBSCURA_V4</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            background: #0d0d12;
-            color: #e0e0e0;
-            font-family: 'Inter', sans-serif;
-            background-image: radial-gradient(circle at 1px 1px, #1a1a20 1px, transparent 0);
-            background-size: 24px 24px;
-            overflow-x: hidden;
+        body { 
+            background: #040406; 
+            color: #d1d1d1; 
+            font-family: 'JetBrains Mono', monospace;
+            --primary: #f8fafc;
         }
-        .glass-card {
-            background: rgba(20, 20, 25, 0.6);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(40, 40, 50, 0.5);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        .scanner-bg {
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 2px, 3px 100%;
         }
-        .orbitron { font-family: 'Orbitron', sans-serif; }
+        .bento-card {
+            background: rgba(15, 15, 20, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .bento-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(20, 20, 25, 0.9);
+        }
         textarea {
-            background-color: rgba(0, 0, 0, 0.3) !important;
-            border: 1px solid rgba(50, 50, 60, 0.5);
-            transition: all 0.3s ease;
-            color: #d0d0d0;
-            padding: 1.5rem;
+            background: transparent !important;
+            resize: none;
+            scrollbar-width: none;
         }
-        textarea:focus {
-            border-color: #6366f1;
-            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        .action-btn {
+            background: var(--primary);
+            color: #000;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
         }
-        .btn-action {
-            background-image: linear-gradient(to right, #6366f1 0%, #a855f7 100%);
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px 0 rgba(99, 102, 241, 0.3);
+        .action-btn:hover {
+            transform: scale(0.98);
+            letter-spacing: 0.2em;
         }
-        .btn-action:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px 0 rgba(99, 102, 241, 0.5);
-        }
-        .log-entry {
-            border-left: 2px solid #3f3f46;
-            padding-left: 0.75rem;
-            margin-bottom: 0.5rem;
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #3b82f6;
+            box-shadow: 0 0 8px #3b82f6;
         }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center py-12 px-6">
+<body class="min-h-screen flex items-center justify-center p-6 scanner-bg">
 
-    <div class="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <header class="lg:col-span-3 mb-8">
-            <h1 class="text-5xl font-bold orbitron text-white tracking-tight">SCRYPT<span class="text-purple-500">_PROTOCOL</span></h1>
-            <p class="text-sm text-zinc-500 mt-2">v3.0 // AUTONOMOUS DEPLOYMENT MODULE</p>
-        </header>
-
-        <div class="lg:col-span-2 glass-card rounded-2xl flex flex-col p-8">
-            <div class="flex items-center gap-3 mb-6">
-                <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-                <span class="text-zinc-400 text-xs tracking-widest uppercase orbitron">SOURCE CODE INPUT</span>
+    <div class="max-w-6xl w-full grid grid-cols-12 gap-4">
+        <div class="col-span-12 flex justify-between items-end pb-4 border-b border-zinc-900 mb-4">
+            <div>
+                <div class="text-[10px] text-zinc-500 mb-1 tracking-[0.3em]">SECURE_TRANSMISSION</div>
+                <h1 class="text-2xl font-bold tracking-tighter text-white">SCRYPT<span class="opacity-30">.v4</span></h1>
             </div>
-            <textarea id="rawHtml" placeholder="在此粘貼您的 HTML 代碼或數據流..." class="flex-grow w-full h-[550px] rounded-xl text-sm leading-relaxed focus:outline-none"></textarea>
+            <div class="text-[10px] text-zinc-600 text-right">
+                STABLE_BUILD_2026<br>LOCAL_ENCRYPTION_ONLY
+            </div>
         </div>
 
-        <div class="lg:col-span-1 flex flex-col gap-8">
-            <div class="glass-card rounded-2xl p-8 flex-grow flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-2 h-2 rounded-full bg-blue-400"></div>
-                        <span class="text-zinc-400 text-xs tracking-widest uppercase orbitron">ENCRYPTION ENGINE</span>
-                    </div>
-                    <p class="text-zinc-300 text-sm leading-relaxed mb-6">
-                        利用 Web Crypto API (AES-GCM 256-bit) 自動編譯代碼。密鑰在生成時內聯，提供隱形、高安全的數據封裝。
-                    </p>
-                </div>
-                
-                <button onclick="encryptAndCopy()" class="btn-action w-full text-white font-bold py-5 rounded-xl text-lg uppercase orbitron flex items-center justify-center gap-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-pulse-fast"><path d="M4 13.5V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6.5L4 13.5z"/><path d="M14 2v6h6"/><path d="M10 15h4"/><path d="M12 13v4"/></svg>
-                    <span>啟動編譯</span>
+        <div class="col-span-12 lg:col-span-8 bento-card rounded-2xl p-6">
+            <div class="flex items-center gap-2 mb-4">
+                <div class="status-dot"></div>
+                <span class="text-[10px] uppercase font-bold text-zinc-500 tracking-widest">Input_Buffer</span>
+            </div>
+            <textarea id="rawInput" class="w-full h-[450px] outline-none text-xs text-zinc-300 leading-relaxed" placeholder="在此粘貼 HTML 源代碼..."></textarea>
+        </div>
+
+        <div class="col-span-12 lg:col-span-4 flex flex-col gap-4">
+            <div class="bento-card rounded-2xl p-8 flex-grow">
+                <h2 class="text-sm font-bold text-white mb-4 italic">協議說明</h2>
+                <p class="text-[11px] text-zinc-500 leading-relaxed mb-8">
+                    本協議不使用 Base64。數據將被重新映射為特殊字元流，模擬損壞的二進制文件。
+                    <br><br>
+                    這種「深度亂碼」風格能有效規避視覺特徵掃描，且在生成的代碼中看起來更像一段隨機混淆的 JS 段落。
+                </p>
+                <button onclick="execute()" class="action-btn w-full py-6 rounded-xl font-bold text-[11px] uppercase tracking-widest">
+                    編譯並複製亂碼代碼
                 </button>
             </div>
 
-            <div class="glass-card rounded-2xl p-8">
-                <div class="flex items-center gap-3 mb-6">
-                    <div class="w-2 h-2 rounded-full bg-red-400"></div>
-                    <span class="text-zinc-400 text-xs tracking-widest uppercase orbitron">SYSTEM LOG</span>
-                </div>
-                <div id="systemLog" class="text-zinc-500 text-xs leading-relaxed max-h-40 overflow-y-auto pr-2">
-                    <div class="log-entry">INIT: System ready. Awaiting input...</div>
+            <div class="bento-card rounded-2xl p-6">
+                <div id="log" class="text-[10px] text-zinc-600 font-mono leading-tight">
+                    READY TO ENCODE...<br>AWAITING_PAYLOAD
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        async function encryptAndCopy() {
-            const rawHtml = document.getElementById('rawHtml').value;
-            const systemLog = document.getElementById('systemLog');
+        // 將二進制轉為不可讀的亂碼字串 (非 Base64)
+        function toObscura(buffer) {
+            return Array.from(new Uint8Array(buffer))
+                .map(b => String.fromCharCode(b + 0x0100)) // 偏移字元躲避常用檢測
+                .join('');
+        }
 
-            if (!rawHtml.trim()) {
-                addLog('ERROR: Input field is empty. Aborting.', 'red');
-                return;
-            }
+        async function execute() {
+            const raw = document.getElementById('rawInput').value;
+            const log = document.getElementById('log');
+            if(!raw) return;
 
-            addLog('STATUS: Initiating encryption sequence...', 'blue');
-            
             try {
-                const textEncoder = new TextEncoder();
-                // 生成 AES-GCM 密鑰 (256位)
-                const key = await crypto.subtle.generateKey(
-                    { name: "AES-GCM", length: 256 },
-                    true, // 可導出
-                    ["encrypt", "decrypt"]
-                );
-                // 生成隨機 IV
+                const enc = new TextEncoder();
+                const key = await crypto.subtle.generateKey({name: "AES-GCM", length: 256}, true, ["encrypt", "decrypt"]);
                 const iv = crypto.getRandomValues(new Uint8Array(12));
-                
-                // 加密原始 HTML
-                const encryptedContent = await crypto.subtle.encrypt(
-                    { name: "AES-GCM", iv: iv },
-                    key,
-                    textEncoder.encode(rawHtml)
-                );
-                
-                // 導出原始密鑰，以便在解密頁面中重新導入
+                const encrypted = await crypto.subtle.encrypt({name: "AES-GCM", iv}, key, enc.encode(raw));
                 const exportedKey = await crypto.subtle.exportKey("raw", key);
-                
-                // 將 IV、導出密鑰和加密數據轉換為 Base64 字符串
-                const payload = {
-                    i: btoa(String.fromCharCode(...iv)), // IV
-                    k: btoa(String.fromCharCode(...new Uint8Array(exportedKey))), // 密鑰
-                    d: btoa(String.fromCharCode(...new Uint8Array(encryptedContent))) // 加密數據
-                };
 
-                // 生成自解密 HTML 模板
-                const outputHtml = generateDecryptionTemplate(payload);
-                
-                // 複製到剪貼板
-                await navigator.clipboard.writeText(outputHtml);
-                
-                addLog('SUCCESS: Code compiled and copied to clipboard.', 'green');
-                addLog('INFO: Target deployment ready.', 'green');
+                // 核心：深度亂碼轉換
+                const obsIv = toObscura(iv);
+                const obsKey = toObscura(exportedKey);
+                const obsData = toObscura(encrypted);
 
-            } catch (error) {
-                console.error("Encryption Error:", error);
-                addLog('CRITICAL_ERROR: Encryption failed. Check console for details.', 'red');
+                const template = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body><script>
+(async()=>{
+const f=(s)=>new Uint8Array([...s].map(c=>c.charCodeAt(0)-0x0100));
+const i=f("${obsIv}"),k=f("${obsKey}"),d=f("${obsData}"),
+sk=await crypto.subtle.importKey("raw",k,"AES-GCM",false,["decrypt"]),
+dec=await crypto.subtle.decrypt({name:"AES-GCM",iv:i},sk,d);
+document.open();document.write(new TextDecoder().decode(dec));document.close();
+})()<\/script></body></html>`;
+
+                await navigator.clipboard.writeText(template);
+                log.innerHTML = "<span class='text-blue-500'>STATUS: SUCCESS</span><br>PAYLOAD_IN_CLIPBOARD<br>ALGO: AES-256-GCM-OBSCURA";
+            } catch (e) {
+                log.innerHTML = "<span class='text-red-500'>ERROR: COMPILATION_FAILED</span>";
             }
         }
-
-        // 生成自解密 HTML 模板
-        function generateDecryptionTemplate(payload) {
-            // 這個模板是極簡主義的，沒有任何可見的內容，直到腳本執行並重寫整個 DOM
-            return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body><script>const _payload_data_ = ${JSON.stringify(payload)};(async()=>{const k=Uint8Array.from(atob(_payload_data_.k),c=>c.charCodeAt(0)),v=Uint8Array.from(atob(_payload_data_.i),c=>c.charCodeAt(0)),d=Uint8Array.from(atob(_payload_data_.d),c=>c.charCodeAt(0)),importedKey=await crypto.subtle.importKey("raw",k,"AES-GCM",false,["decrypt"]),decryptedData=await crypto.subtle.decrypt({name:"AES-GCM",iv:v},importedKey,d);document.open();document.write(new TextDecoder().decode(decryptedData));document.close()})()<\/script></body></html>`;
-        }
-
-        // 輔助函數：添加日誌條目
-        function addLog(message, type = 'default') {
-            const systemLog = document.getElementById('systemLog');
-            const timestamp = new Date().toLocaleTimeString('zh-TW', {hour12: false});
-            const entry = document.createElement('div');
-            entry.className = 'log-entry';
-            let colorClass = 'text-zinc-500';
-            if (type === 'red') colorClass = 'text-red-400';
-            else if (type === 'green') colorClass = 'text-green-400';
-            else if (type === 'blue') colorClass = 'text-blue-400';
-
-            entry.innerHTML = `<span class="${colorClass}">[${timestamp}] ${message}</span>`;
-            systemLog.appendChild(entry);
-            systemLog.scrollTop = systemLog.scrollHeight; // 自動滾動到底部
-        }
-
-        // 初始化日誌
-        document.addEventListener('DOMContentLoaded', () => {
-            addLog('SYSTEM_BOOT: All modules online.', 'green');
-            addLog('READY: Waiting for operational parameters.', 'blue');
-        });
     </script>
 </body>
 </html>
