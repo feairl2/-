@@ -2,88 +2,151 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>SCRYPT // SHADOW-KERNEL</title>
+    <title>SCRYPT // TRIPLE-GATE</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;700&display=swap" rel="stylesheet">
     <style>
-        :root { --b: #000; --f: #fff; --g: #111; }
-        body { background: var(--b); color: #444; font-family: 'JetBrains Mono', monospace; overflow: hidden; }
-        .p { background: rgba(5,5,5,0.9); border: 1px solid var(--g); backdrop-filter: blur(20px); }
-        textarea { background: transparent!important; color: #888; border: none; outline: none; resize: none; font-size: 10px; }
-        .x { background: var(--f); color: var(--b); font-weight: 900; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer; }
-        .x:hover { filter: invert(1); letter-spacing: 0.2em; }
-        .m { font-size: 9px; color: #222; overflow: hidden; border-left: 1px solid #111; padding-left: 10px; }
+        :root { --accent: #00f2ff; }
+        body {
+            background: radial-gradient(circle at top left, #0a0a0a, #000);
+            font-family: 'JetBrains Mono', monospace;
+            color: #fff;
+            overflow: hidden;
+        }
+        /* 玻璃流體風格 */
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(15px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .glow-btn {
+            background: var(--accent);
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.3);
+            transition: 0.5s cubic-bezier(0.2, 1, 0.3, 1);
+        }
+        .glow-btn:hover {
+            box-shadow: 0 0 40px rgba(0, 242, 255, 0.6);
+            transform: translateY(-2px);
+            letter-spacing: 0.1em;
+        }
+        textarea {
+            background: transparent !important;
+            border: none !important;
+            outline: none !important;
+            color: rgba(255,255,255,0.7);
+            font-size: 11px;
+            scrollbar-width: thin;
+        }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-6">
-    <div class="max-w-5xl w-full grid grid-cols-12 gap-4">
-        <div class="col-span-12 mb-10 border-b border-zinc-900 pb-4 flex justify-between items-end">
-            <h1 class="text-white text-xl font-bold tracking-[0.8em]">SHADOW_KERNEL</h1>
-            <div class="text-[9px] uppercase opacity-30">Security Level: Grade_A</div>
-        </div>
-
-        <div class="col-span-12 lg:col-span-9 p rounded-3xl p-6 h-[500px] flex flex-col">
-            <textarea id="i" class="flex-grow w-full" placeholder="[INPUT_RAW_HTML]"></textarea>
-        </div>
-
-        <div class="col-span-12 lg:col-span-3 flex flex-col gap-4">
-            <div class="p rounded-3xl p-6 flex-grow">
-                <div class="text-[9px] uppercase mb-10 tracking-widest text-zinc-600">Command_Center</div>
-                <button onclick="b()" class="x w-full py-6 rounded-2xl text-[10px] uppercase">Compile</button>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="glass max-w-6xl w-full h-[80vh] flex flex-col p-8 relative">
+        <div class="absolute -top-24 -right-24 w-96 h-96 bg-cyan-500/10 rounded-full blur-[100px]"></div>
+        
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-2xl font-black tracking-tighter italic">TRIPLE_GATE <span class="text-cyan-400">V3</span></h1>
+                <p class="text-[9px] opacity-40 uppercase tracking-[0.3em]">Self-Destruct // AES-GCM // B64 // Uni-Shift</p>
             </div>
-            <div id="l" class="p rounded-3xl p-4 h-32 m">
-                SYSTEM_READY...<br>
+            <div id="status" class="text-[10px] border border-cyan-500/30 px-4 py-1 rounded-full text-cyan-400">KERNEL_IDLE</div>
+        </header>
+
+        <div class="flex-grow grid grid-cols-12 gap-6">
+            <div class="col-span-12 lg:col-span-8 flex flex-col glass bg-black/20 p-6">
+                <textarea id="input" class="flex-grow" placeholder="[INPUT_RAW_HTML_HERE]"></textarea>
+            </div>
+            
+            <div class="col-span-12 lg:col-span-4 flex flex-col gap-4">
+                <div class="glass p-6 flex flex-col justify-center bg-cyan-500/5">
+                    <button onclick="compile()" class="glow-btn w-full py-8 rounded-2xl font-bold uppercase text-xs">Execute Triple Crypt</button>
+                </div>
+                <div id="log" class="glass p-6 flex-grow text-[9px] text-cyan-800 font-bold overflow-y-auto leading-relaxed">
+                    > SYSTEM READY...<br>
+                </div>
             </div>
         </div>
     </div>
 
 <script>
-const log = (t) => {
-    const el = document.getElementById('l');
-    el.innerHTML = `> ${t}<br>` + el.innerHTML;
+const log = (m) => {
+    const el = document.getElementById('log');
+    el.innerHTML = `> ${m}<br>` + el.innerHTML;
 };
-const enc = new TextEncoder();
-const s = (u) => Array.from(u).map(b => String.fromCharCode(b + 0x0800)).join('');
 
-async function b() {
-    const raw = document.getElementById('i').value;
-    if(!raw) return log("NULL_INPUT");
-    log("BUILDING_ENCRYPTED_SHELL...");
+// 工具：Uni-Shift 混淆
+const shift = (s) => Array.from(new TextEncoder().encode(s)).map(b => String.fromCharCode(b + 0x0800)).join('');
+
+async function compile() {
+    const raw = document.getElementById('input').value;
+    if(!raw) return log("ERROR: NULL_CONTENT");
+    
+    document.getElementById('status').innerText = "ENCRYPTING...";
+    log("INITIATING TRIPLE_GATE LAYER...");
 
     try {
-        const k = await crypto.subtle.generateKey({name:"AES-GCM",length:256},true,["encrypt","decrypt"]);
+        // --- 第一層：AES-GCM + 防禦與自毀邏輯 ---
+        const key = await crypto.subtle.generateKey({name:"AES-GCM",length:256},true,["encrypt","decrypt"]);
         const iv = crypto.getRandomValues(new Uint8Array(12));
         
-        // 【核心：將防禦邏輯與內容打包】
+        // 此處包含自解構邏輯：解密後刪除當前 script 標籤
         const shell = `
         (function(){
-            const _trap = () => { 
-                const t = Date.now(); debugger; 
-                if(Date.now()-t > 50) { document.body.innerHTML=""; window.location.replace("about:blank"); }
+            const _t = () => { 
+                const s = Date.now(); debugger; 
+                if(Date.now()-s > 50) { document.body.innerHTML=""; window.location.replace("about:blank"); }
             };
-            setInterval(_trap, 100);
+            const _monitor = setInterval(_t, 100);
             window.oncontextmenu = e => e.preventDefault();
-            window.onkeydown = e => {
-                if(e.keyCode===123 || (e.ctrlKey && e.shiftKey && (e.keyCode===73||e.keyCode===74||e.keyCode===67)) || (e.ctrlKey && e.keyCode===85)) return false;
-            };
-            document.open(); document.write(\`${raw.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`); document.close();
+            window.onkeydown = e => { if([123, 73, 74, 85, 67].includes(e.keyCode) && (e.ctrlKey || e.metaKey)) return false; };
+
+            // 執行與自解構
+            document.open(); 
+            document.write(\`${raw.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`); 
+            document.close();
+            
+            // 抹除痕跡
+            const _sc = document.currentScript || document.scripts[document.scripts.length - 1];
+            if(_sc) _sc.remove();
         })();`;
 
-        const d = await crypto.subtle.encrypt({name:"AES-GCM",iv}, k, enc.encode(shell));
-        const xk = await crypto.subtle.exportKey("raw", k);
+        const encrypted = await crypto.subtle.encrypt({name:"AES-GCM",iv}, key, new TextEncoder().encode(shell));
+        const rawKey = await crypto.subtle.exportKey("raw", key);
         
-        const _K = s(new Uint8Array(xk));
-        const _I = s(iv);
-        const _D = s(new Uint8Array(d));
+        // --- 第二層：Base64 編碼 ---
+        const b64_d = btoa(String.fromCharCode(...new Uint8Array(encrypted)));
+        const b64_k = btoa(String.fromCharCode(...new Uint8Array(rawKey)));
+        const b64_i = btoa(String.fromCharCode(...new Uint8Array(iv)));
 
-        const res = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body><script>
-(function(){const _0x=(s)=>new Uint8Array([...s].map(c=>c.charCodeAt(0)-0x0800));(async()=>{try{const k=_0x("${_K}"),i=_0x("${_I}"),d=_0x("${_D}"),sk=await crypto.subtle.importKey("raw",k,"AES-GCM",false,["decrypt"]),r=await crypto.subtle.decrypt({name:"AES-GCM",iv:i},sk,d);new Function(new TextDecoder().decode(r))()}catch(e){}})()})()
+        // --- 第三層：Uni-Shift 視覺混淆 ---
+        const final_d = shift(b64_d);
+        const final_k = shift(b64_k);
+        const final_i = shift(b64_i);
+
+        const payload = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body><script>
+(function(){
+    const _u = (s) => new Uint8Array([...s].map(c => c.charCodeAt(0) - 0x0800));
+    const _b = (s) => Uint8Array.from(atob(new TextDecoder().decode(s)), c => c.charCodeAt(0));
+    (async () => {
+        try {
+            const k = _b(_u("${final_k}")), i = _b(_u("${final_i}")), d = _b(_u("${final_d}"));
+            const sk = await crypto.subtle.importKey("raw", k, "AES-GCM", false, ["decrypt"]);
+            const r = await crypto.subtle.decrypt({name: "AES-GCM", iv: i}, sk, d);
+            new Function(new TextDecoder().decode(r))();
+        } catch (e) {}
+    })();
+})();
 <\/script></body></html>`;
 
-        await navigator.clipboard.writeText(res);
-        log("SHADOW_DEPLOY_SUCCESS");
-        log("CLIPBOARD_SYNCED");
-    } catch(e) { log("KERNEL_FAULT"); }
+        await navigator.clipboard.writeText(payload);
+        log("SUCCESS: PAYLOAD SYNCED TO CLIPBOARD");
+        document.getElementById('status').innerText = "GATE_LOCKED";
+        
+    } catch(e) {
+        log("FATAL: KERNEL_CRASHED");
+        console.error(e);
+    }
 }
 </script>
 </body>
