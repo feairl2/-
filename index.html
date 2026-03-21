@@ -70,18 +70,15 @@ textarea {
 
 <div class="max-w-6xl w-full grid grid-cols-12 gap-4">
 
-    <!-- Header -->
     <div class="col-span-12 flex justify-between border-b border-zinc-900 pb-4">
         <h1 class="text-white tracking-[0.8em] text-xl font-bold">SHADOW_KERNEL_X</h1>
         <div class="badge">ENCRYPTION_ENGINE // AES-256</div>
     </div>
 
-    <!-- Editor -->
     <div class="col-span-12 lg:col-span-9 panel rounded-3xl p-6 h-[520px] flex flex-col">
         <textarea id="input" class="flex-grow w-full" placeholder="[INPUT OR ENCRYPTED HTML]"></textarea>
     </div>
 
-    <!-- Controls -->
     <div class="col-span-12 lg:col-span-3 flex flex-col gap-4">
 
         <div class="panel rounded-3xl p-6 flex flex-col gap-4">
@@ -104,10 +101,11 @@ const dec = new TextDecoder();
 
 const log = (t,type="info") => {
     const el = document.getElementById("log");
-    const color = type==="err" ? "#550000" : type==="ok" ? "#003300" : "#222";
+    const color = type==="err" ? "#ff4444" : type==="ok" ? "#44ff44" : "#555";
     el.innerHTML = `<span style="color:${color}">> ${t}</span><br>` + el.innerHTML;
 };
 
+// 混淆轉換函數
 const s = (u) => Array.from(u).map(b => String.fromCharCode(b + 0x0800)).join('');
 const u = (s) => new Uint8Array([...s].map(c => c.charCodeAt(0) - 0x0800));
 
@@ -118,17 +116,17 @@ async function encrypt(){
 
     log("BUILDING_ENCRYPTED_SHELL...");
 
-    try{
+    try {
         const k = await crypto.subtle.generateKey({name:"AES-GCM",length:256},true,["encrypt","decrypt"]);
         const iv = crypto.getRandomValues(new Uint8Array(12));
 
+        // 將原始內容包裹在可執行的 Shell 中
         const shell = `(function(){document.open();document.write(\`${raw.replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/\$/g,'\\$')}\`);document.close();})();`;
 
         const d = await crypto.subtle.encrypt({name:"AES-GCM",iv},k,enc.encode(shell));
         const xk = await crypto.subtle.exportKey("raw",k);
 
-        const res = `
-<!DOCTYPE html><html><body><script>
+        const res = `<!DOCTYPE html><html><body><script>
 (async()=>{
 const d=(s)=>new Uint8Array([...s].map(c=>c.charCodeAt(0)-0x0800));
 const k=d("${s(new Uint8Array(xk))}");
@@ -140,11 +138,13 @@ new Function(new TextDecoder().decode(r))();
 })();
 <\/script></body></html>`;
 
+        document.getElementById("input").value = res;
         navigator.clipboard.writeText(res);
         log("ENCRYPT_SUCCESS","ok");
         log("COPIED_TO_CLIPBOARD");
 
-    }catch(e){
+    } catch(e) {
+        console.error(e);
         log("ENCRYPT_FAIL","err");
     }
 }
@@ -159,30 +159,45 @@ async function decrypt(){
 
     log("START_DECRYPT...");
 
-    try{
-        const get = (regex) => input.match(regex)?.[1];
+    try {
+        // 使用更寬鬆的正則表達式來匹配被格式化後的字串
+        const get = (key) => {
+            const regex = new RegExp(key + '=d\\("([^"]+)"\\)');
+            const match = input.match(regex);
+            return match ? match[1] : null;
+        };
 
-        const keyStr = get(/k=d\("([^"]+)"\)/);
-        const ivStr = get(/i=d\("([^"]+)"\)/);
-        const dataStr = get(/dt=d\("([^"]+)"\)/);
+        const keyStr = get('const k');
+        const ivStr = get('const i');
+        const dataStr = get('const dt');
 
-        if(!keyStr) return log("PARSE_FAIL","err");
+        if(!keyStr || !ivStr || !dataStr) return log("PARSE_FAIL (MISSING_DATA)","err");
 
-        const k = u(keyStr);
-        const iv = u(ivStr);
-        const d = u(dataStr);
+        const kBuf = u(keyStr);
+        const ivBuf = u(ivStr);
+        const dBuf = u(dataStr);
 
-        const sk = await crypto.subtle.importKey("raw",k,"AES-GCM",false,["decrypt"]);
-        const res = await crypto.subtle.decrypt({name:"AES-GCM",iv},sk,d);
+        const sk = await crypto.subtle.importKey("raw", kBuf, "AES-GCM", false, ["decrypt"]);
+        const decryptedBuffer = await crypto.subtle.decrypt({name:"AES-GCM", iv: ivBuf}, sk, dBuf);
 
-        const decoded = dec.decode(res);
+        let decoded = dec.decode(decryptedBuffer);
+
+        // 還原還原：移除 Shell 包裝還原原始 HTML
+        // 匹配 (function(){document.open();document.write(` ... `);document.close();})();
+        const shellMatch = decoded.match(/document\.write\(`([\s\S]*)`\);/);
+        if (shellMatch && shellMatch[1]) {
+            decoded = shellMatch[1]
+                .replace(/\\`/g, '`')
+                .replace(/\\\\\$/g, '$')
+                .replace(/\\\\\\/g, '\\'); 
+        }
 
         document.getElementById("input").value = decoded;
-
         log("DECRYPT_SUCCESS","ok");
 
-    }catch(e){
-        log("DECRYPT_FAIL","err");
+    } catch(e) {
+        console.error(e);
+        log("DECRYPT_FAIL (INVALID_KEY_OR_DATA)","err");
     }
 }
 </script>
