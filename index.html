@@ -3,76 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <title>SCRYPT // SHADOW-KERNEL X</title>
-
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;700&display=swap" rel="stylesheet">
-
 <style>
-:root {
-    --bg:#050505;
-    --panel:#0a0a0a;
-    --border:#151515;
-    --text:#888;
-    --accent:#ffffff;
-}
-
-body {
-    background: var(--bg);
-    font-family: 'JetBrains Mono', monospace;
-    overflow: hidden;
-    color: var(--text);
-}
-
-.panel {
-    background: rgba(10,10,10,0.9);
-    border: 1px solid var(--border);
-    backdrop-filter: blur(20px);
-}
-
-textarea {
-    background: transparent!important;
-    color: #aaa;
-    border: none;
-    outline: none;
-    resize: none;
-    font-size: 11px;
-}
-
-.btn {
-    background: var(--accent);
-    color: black;
-    font-weight: 900;
-    transition: 0.35s;
-    cursor: pointer;
-}
-
-.btn:hover {
-    letter-spacing: 0.2em;
-    filter: invert(1);
-}
-
-.log {
-    font-size: 10px;
-    color: #333;
-    border-left: 1px solid #111;
-    padding-left: 10px;
-    overflow-y: auto;
-}
-
-.badge {
-    font-size: 9px;
-    opacity: 0.4;
-}
+:root { --bg:#050505; --panel:#0a0a0a; --border:#151515; --text:#888; --accent:#ffffff; }
+body { background: var(--bg); font-family: 'JetBrains Mono', monospace; overflow: hidden; color: var(--text); }
+.panel { background: rgba(10,10,10,0.9); border: 1px solid var(--border); backdrop-filter: blur(20px); }
+textarea { background: transparent!important; color: #aaa; border: none; outline: none; resize: none; font-size: 11px; }
+.btn { background: var(--accent); color: black; font-weight: 900; transition: 0.35s; cursor: pointer; }
+.btn:hover { letter-spacing: 0.2em; filter: invert(1); }
+.log { font-size: 10px; color: #333; border-left: 1px solid #111; padding-left: 10px; overflow-y: auto; }
+.badge { font-size: 9px; opacity: 0.4; }
 </style>
 </head>
-
 <body class="min-h-screen flex items-center justify-center p-6">
 
 <div class="max-w-6xl w-full grid grid-cols-12 gap-4">
-
     <div class="col-span-12 flex justify-between border-b border-zinc-900 pb-4">
         <h1 class="text-white tracking-[0.8em] text-xl font-bold">SHADOW_KERNEL_X</h1>
-        <div class="badge">ENCRYPTION_ENGINE // AES-256</div>
+        <div class="badge">ENCRYPTION_ENGINE // AES-256-GCM</div>
     </div>
 
     <div class="col-span-12 lg:col-span-9 panel rounded-3xl p-6 h-[520px] flex flex-col">
@@ -80,127 +29,120 @@ textarea {
     </div>
 
     <div class="col-span-12 lg:col-span-3 flex flex-col gap-4">
-
         <div class="panel rounded-3xl p-6 flex flex-col gap-4">
             <div class="badge mb-4">COMMAND_CENTER</div>
-
             <button onclick="encrypt()" class="btn py-5 rounded-xl text-[11px] uppercase">Compile</button>
             <button onclick="decrypt()" class="btn py-5 rounded-xl text-[11px] uppercase">Decompile</button>
         </div>
-
-        <div id="log" class="panel rounded-3xl p-4 h-40 log">
-            SYSTEM_READY...<br>
-        </div>
+        <div id="log" class="panel rounded-3xl p-4 h-40 log">SYSTEM_READY...<br></div>
     </div>
-
 </div>
 
 <script>
 const enc = new TextEncoder();
 const dec = new TextDecoder();
 
-const log = (t,type="info") => {
+const log = (t, type="info") => {
     const el = document.getElementById("log");
-    const color = type==="err" ? "#ff4444" : type==="ok" ? "#44ff44" : "#555";
+    const color = type === "err" ? "#ff4444" : type === "ok" ? "#44ff44" : "#555";
     el.innerHTML = `<span style="color:${color}">> ${t}</span><br>` + el.innerHTML;
 };
 
-// 混淆轉換函數
-const s = (u) => Array.from(u).map(b => String.fromCharCode(b + 0x0800)).join('');
-const u = (s) => new Uint8Array([...s].map(c => c.charCodeAt(0) - 0x0800));
+// 使用 Base64 代替 Unicode 偏移，確保資料完整性
+const bufToBase64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
+const base64ToBuf = (str) => Uint8Array.from(atob(str), c => c.charCodeAt(0));
 
 /* ================= ENCRYPT ================= */
-async function encrypt(){
+async function encrypt() {
     const raw = document.getElementById('input').value;
-    if(!raw) return log("NULL_INPUT","err");
+    if (!raw) return log("NULL_INPUT", "err");
 
     log("BUILDING_ENCRYPTED_SHELL...");
 
     try {
-        const k = await crypto.subtle.generateKey({name:"AES-GCM",length:256},true,["encrypt","decrypt"]);
+        const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
         const iv = crypto.getRandomValues(new Uint8Array(12));
 
-        // 將原始內容包裹在可執行的 Shell 中
-        const shell = `(function(){document.open();document.write(\`${raw.replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/\$/g,'\\$')}\`);document.close();})();`;
+        // 這裡的 Shell 邏輯：先用 Base64 包裝原始 HTML，避免反引號衝突
+        const payload = btoa(unescape(encodeURIComponent(raw)));
+        const shell = `document.open();document.write(decodeURIComponent(escape(atob("${payload}"))));document.close();`;
 
-        const d = await crypto.subtle.encrypt({name:"AES-GCM",iv},k,enc.encode(shell));
-        const xk = await crypto.subtle.exportKey("raw",k);
+        const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, enc.encode(shell));
+        const exportedKey = await crypto.subtle.exportKey("raw", key);
 
-        const res = `<!DOCTYPE html><html><body><script>
-(async()=>{
-const d=(s)=>new Uint8Array([...s].map(c=>c.charCodeAt(0)-0x0800));
-const k=d("${s(new Uint8Array(xk))}");
-const i=d("${s(iv)}");
-const dt=d("${s(new Uint8Array(d))}");
-const sk=await crypto.subtle.importKey("raw",k,"AES-GCM",false,["decrypt"]);
-const r=await crypto.subtle.decrypt({name:"AES-GCM",iv:i},sk,dt);
-new Function(new TextDecoder().decode(r))();
+        const res = `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body>
+<script>
+(async () => {
+  const b64ToBuf = (b) => Uint8Array.from(atob(b), c => c.charCodeAt(0));
+  const k = "${bufToBase64(exportedKey)}";
+  const i = "${bufToBase64(iv)}";
+  const d = "${bufToBase64(encrypted)}";
+  const sk = await crypto.subtle.importKey("raw", b64ToBuf(k), "AES-GCM", false, ["decrypt"]);
+  const r = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64ToBuf(i) }, sk, b64ToBuf(d));
+  new Function(new TextDecoder().decode(r))();
 })();
-<\/script></body></html>`;
+<\/script>
+</body>
+</html>`;
 
         document.getElementById("input").value = res;
         navigator.clipboard.writeText(res);
-        log("ENCRYPT_SUCCESS","ok");
+        log("ENCRYPT_SUCCESS", "ok");
         log("COPIED_TO_CLIPBOARD");
-
-    } catch(e) {
+    } catch (e) {
         console.error(e);
-        log("ENCRYPT_FAIL","err");
+        log("ENCRYPT_FAIL", "err");
     }
 }
 
 /* ================= DECRYPT ================= */
-async function decrypt(){
+async function decrypt() {
     const input = document.getElementById('input').value;
-
-    if(!input.includes("crypto.subtle")) {
-        return log("NOT_VALID_ENCRYPTED_FILE","err");
-    }
+    if (!input.includes("crypto.subtle")) return log("NOT_VALID_ENCRYPTED_FILE", "err");
 
     log("START_DECRYPT...");
 
     try {
-        // 使用更寬鬆的正則表達式來匹配被格式化後的字串
-        const get = (key) => {
-            const regex = new RegExp(key + '=d\\("([^"]+)"\\)');
-            const match = input.match(regex);
-            return match ? match[1] : null;
+        // 使用更精確的提取邏輯
+        const extract = (varName) => {
+            const re = new RegExp(`const ${varName} = "([^"]+)"`);
+            return input.match(re)?.[1];
         };
 
-        const keyStr = get('const k');
-        const ivStr = get('const i');
-        const dataStr = get('const dt');
+        const kStr = extract('k');
+        const iStr = extract('i');
+        const dStr = extract('d');
 
-        if(!keyStr || !ivStr || !dataStr) return log("PARSE_FAIL (MISSING_DATA)","err");
+        if (!kStr || !iStr || !dStr) return log("PARSE_FAIL (DATA_MISSING)", "err");
 
-        const kBuf = u(keyStr);
-        const ivBuf = u(ivStr);
-        const dBuf = u(dataStr);
+        const kBuf = base64ToBuf(kStr);
+        const iBuf = base64ToBuf(iStr);
+        const dBuf = base64ToBuf(dStr);
 
         const sk = await crypto.subtle.importKey("raw", kBuf, "AES-GCM", false, ["decrypt"]);
-        const decryptedBuffer = await crypto.subtle.decrypt({name:"AES-GCM", iv: ivBuf}, sk, dBuf);
+        const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iBuf }, sk, dBuf);
+        
+        let shellCode = dec.decode(decrypted);
 
-        let decoded = dec.decode(decryptedBuffer);
-
-        // 還原還原：移除 Shell 包裝還原原始 HTML
-        // 匹配 (function(){document.open();document.write(` ... `);document.close();})();
-        const shellMatch = decoded.match(/document\.write\(`([\s\S]*)`\);/);
-        if (shellMatch && shellMatch[1]) {
-            decoded = shellMatch[1]
-                .replace(/\\`/g, '`')
-                .replace(/\\\\\$/g, '$')
-                .replace(/\\\\\\/g, '\\'); 
+        // 從 Shell 中提取原始內容 (處理 Base64 包裝)
+        const contentMatch = shellCode.match(/atob\("([^"]+)"\)/);
+        if (contentMatch) {
+            document.getElementById("input").value = decodeURIComponent(escape(atob(contentMatch[1])));
+            log("DECRYPT_SUCCESS", "ok");
+        } else {
+            // 如果不是標準 Shell 格式，直接輸出解密結果
+            document.getElementById("input").value = shellCode;
+            log("DECRYPT_PARTIAL_SUCCESS", "ok");
         }
 
-        document.getElementById("input").value = decoded;
-        log("DECRYPT_SUCCESS","ok");
-
-    } catch(e) {
+    } catch (e) {
         console.error(e);
-        log("DECRYPT_FAIL (INVALID_KEY_OR_DATA)","err");
+        log("DECRYPT_FAIL (AUTH_TAG_FAILED)", "err");
     }
 }
 </script>
-
 </body>
 </html>
