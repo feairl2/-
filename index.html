@@ -2,13 +2,13 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>SCRYPT // SHADOW-KERNEL X</title>
+<title>SHADOW_KERNEL // SCRYPT-X</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;700&display=swap" rel="stylesheet">
 
 <style>
-:root {
+:root{
     --bg:#050505;
     --panel:#0a0a0a;
     --border:#151515;
@@ -16,52 +16,47 @@
     --accent:#ffffff;
 }
 
-body {
-    background: var(--bg);
-    font-family: 'JetBrains Mono', monospace;
-    overflow: hidden;
-    color: var(--text);
+body{
+    background:var(--bg);
+    font-family:'JetBrains Mono',monospace;
+    overflow:hidden;
+    color:var(--text);
 }
 
-.panel {
-    background: rgba(10,10,10,0.9);
-    border: 1px solid var(--border);
-    backdrop-filter: blur(20px);
+.panel{
+    background:rgba(10,10,10,0.9);
+    border:1px solid var(--border);
+    backdrop-filter:blur(20px);
 }
 
-textarea {
-    background: transparent!important;
-    color: #aaa;
-    border: none;
-    outline: none;
-    resize: none;
-    font-size: 11px;
+textarea{
+    background:transparent!important;
+    color:#aaa;
+    border:none;
+    outline:none;
+    resize:none;
+    font-size:11px;
 }
 
-.btn {
-    background: var(--accent);
-    color: black;
-    font-weight: 900;
-    transition: 0.35s;
-    cursor: pointer;
+.btn{
+    background:var(--accent);
+    color:black;
+    font-weight:900;
+    transition:0.3s;
+    cursor:pointer;
 }
 
-.btn:hover {
-    letter-spacing: 0.2em;
-    filter: invert(1);
+.btn:hover{
+    letter-spacing:0.2em;
+    filter:invert(1);
 }
 
-.log {
-    font-size: 10px;
-    color: #333;
-    border-left: 1px solid #111;
-    padding-left: 10px;
-    overflow-y: auto;
-}
-
-.badge {
-    font-size: 9px;
-    opacity: 0.4;
+.log{
+    font-size:10px;
+    color:#333;
+    border-left:1px solid #111;
+    padding-left:10px;
+    overflow-y:auto;
 }
 </style>
 </head>
@@ -70,119 +65,121 @@ textarea {
 
 <div class="max-w-6xl w-full grid grid-cols-12 gap-4">
 
-    <!-- Header -->
-    <div class="col-span-12 flex justify-between border-b border-zinc-900 pb-4">
-        <h1 class="text-white tracking-[0.8em] text-xl font-bold">SHADOW_KERNEL_X</h1>
-        <div class="badge">ENCRYPTION_ENGINE // AES-256</div>
+<div class="col-span-12 flex justify-between border-b border-zinc-900 pb-4">
+    <h1 class="text-white tracking-[0.8em] text-xl font-bold">SHADOW_KERNEL_X</h1>
+    <div class="text-[10px] opacity-30">AES-256 / OBFUSCATION_LAYER</div>
+</div>
+
+<div class="col-span-12 lg:col-span-9 panel rounded-3xl p-6 h-[520px] flex flex-col">
+    <textarea id="input" class="flex-grow w-full" placeholder="[INPUT OR ENCRYPTED HTML]"></textarea>
+</div>
+
+<div class="col-span-12 lg:col-span-3 flex flex-col gap-4">
+
+    <div class="panel rounded-3xl p-6 flex flex-col gap-4">
+        <button onclick="encrypt()" class="btn py-5 rounded-xl text-[11px] uppercase">Compile</button>
+        <button onclick="decrypt()" class="btn py-5 rounded-xl text-[11px] uppercase">Decompile</button>
     </div>
 
-    <!-- Editor -->
-    <div class="col-span-12 lg:col-span-9 panel rounded-3xl p-6 h-[520px] flex flex-col">
-        <textarea id="input" class="flex-grow w-full" placeholder="[INPUT OR ENCRYPTED HTML]"></textarea>
-    </div>
-
-    <!-- Controls -->
-    <div class="col-span-12 lg:col-span-3 flex flex-col gap-4">
-
-        <div class="panel rounded-3xl p-6 flex flex-col gap-4">
-            <div class="badge mb-4">COMMAND_CENTER</div>
-
-            <button onclick="encrypt()" class="btn py-5 rounded-xl text-[11px] uppercase">Compile</button>
-            <button onclick="decrypt()" class="btn py-5 rounded-xl text-[11px] uppercase">Decompile</button>
-        </div>
-
-        <div id="log" class="panel rounded-3xl p-4 h-40 log">
-            SYSTEM_READY...<br>
-        </div>
+    <div id="log" class="panel rounded-3xl p-4 h-40 log">
+        SYSTEM_READY...<br>
     </div>
 
 </div>
+</div>
 
 <script>
-const enc = new TextEncoder();
-const dec = new TextDecoder();
+const enc=new TextEncoder();
+const dec=new TextDecoder();
 
-const log = (t,type="info") => {
-    const el = document.getElementById("log");
-    const color = type==="err" ? "#550000" : type==="ok" ? "#003300" : "#222";
-    el.innerHTML = `<span style="color:${color}">> ${t}</span><br>` + el.innerHTML;
+const log=(t)=>{
+    const el=document.getElementById("log");
+    el.innerHTML="> "+t+"<br>"+el.innerHTML;
 };
 
-const s = (u) => Array.from(u).map(b => String.fromCharCode(b + 0x0800)).join('');
-const u = (s) => new Uint8Array([...s].map(c => c.charCodeAt(0) - 0x0800));
+/* ===== 偏移加密（保持你那種殼） ===== */
+const pack=(u)=>Array.from(u).map(b=>String.fromCharCode(b+0x0800)).join('');
+const unpack=(s)=>new Uint8Array([...s].map(c=>c.charCodeAt(0)-(0x07FF+0x01)));
 
 /* ================= ENCRYPT ================= */
 async function encrypt(){
-    const raw = document.getElementById('input').value;
-    if(!raw) return log("NULL_INPUT","err");
+    const raw=document.getElementById("input").value;
+    if(!raw) return log("NULL_INPUT");
 
-    log("BUILDING_ENCRYPTED_SHELL...");
+    log("BUILDING_KERNEL...");
 
     try{
-        const k = await crypto.subtle.generateKey({name:"AES-GCM",length:256},true,["encrypt","decrypt"]);
-        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const key=await crypto.subtle.generateKey({name:"AES-GCM",length:256},true,["encrypt","decrypt"]);
+        const iv=crypto.getRandomValues(new Uint8Array(12));
 
-        const shell = `(function(){document.open();document.write(\`${raw.replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/\$/g,'\\$')}\`);document.close();})();`;
+        const shell=`(function(){document.open();document.write(\`${raw.replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/\$/g,'\\$')}\`);document.close();})();`;
 
-        const d = await crypto.subtle.encrypt({name:"AES-GCM",iv},k,enc.encode(shell));
-        const xk = await crypto.subtle.exportKey("raw",k);
+        const data=await crypto.subtle.encrypt({name:"AES-GCM",iv},key,enc.encode(shell));
+        const rawKey=await crypto.subtle.exportKey("raw",key);
 
-        const res = `
-<!DOCTYPE html><html><body><script>
+        const _K=pack(new Uint8Array(rawKey));
+        const _I=pack(iv);
+        const _D=pack(new Uint8Array(data));
+
+        const res=`<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body><script>
+(function(){
+const _0x=(s)=>new Uint8Array([...s].map(c=>c.charCodeAt(0)-(0x07FF+0x01)));
 (async()=>{
-const d=(s)=>new Uint8Array([...s].map(c=>c.charCodeAt(0)-0x0800));
-const k=d("${s(new Uint8Array(xk))}");
-const i=d("${s(iv)}");
-const dt=d("${s(new Uint8Array(d))}");
+try{
+const k=_0x("${_K}");
+const i=_0x("${_I}");
+const d=_0x("${_D}");
+
 const sk=await crypto.subtle.importKey("raw",k,"AES-GCM",false,["decrypt"]);
-const r=await crypto.subtle.decrypt({name:"AES-GCM",iv:i},sk,dt);
+const r=await crypto.subtle.decrypt({name:"AES-GCM",iv:i},sk,d);
+
 new Function(new TextDecoder().decode(r))();
+
+}catch(e){}
+})();
 })();
 <\/script></body></html>`;
 
-        navigator.clipboard.writeText(res);
-        log("ENCRYPT_SUCCESS","ok");
-        log("COPIED_TO_CLIPBOARD");
+        await navigator.clipboard.writeText(res);
+
+        log("COMPILE_SUCCESS");
+        log("COPIED");
 
     }catch(e){
-        log("ENCRYPT_FAIL","err");
+        log("KERNEL_ERROR");
     }
 }
 
 /* ================= DECRYPT ================= */
 async function decrypt(){
-    const input = document.getElementById('input').value;
+    const input=document.getElementById("input").value;
 
-    if(!input.includes("crypto.subtle")) {
-        return log("NOT_VALID_ENCRYPTED_FILE","err");
-    }
+    if(!input.includes("_0x")) return log("INVALID_FORMAT");
 
-    log("START_DECRYPT...");
+    log("DECOMPILING...");
 
     try{
-        const get = (regex) => input.match(regex)?.[1];
+        const get=(r)=>input.match(r)?.[1];
 
-        const keyStr = get(/k=d\("([^"]+)"\)/);
-        const ivStr = get(/i=d\("([^"]+)"\)/);
-        const dataStr = get(/dt=d\("([^"]+)"\)/);
+        const keyStr=get(/k=_0x\("([^"]+)"\)/);
+        const ivStr=get(/i=_0x\("([^"]+)"\)/);
+        const dataStr=get(/d=_0x\("([^"]+)"\)/);
 
-        if(!keyStr) return log("PARSE_FAIL","err");
+        if(!keyStr) return log("PARSE_FAIL");
 
-        const k = u(keyStr);
-        const iv = u(ivStr);
-        const d = u(dataStr);
+        const k=unpack(keyStr);
+        const iv=unpack(ivStr);
+        const d=unpack(dataStr);
 
-        const sk = await crypto.subtle.importKey("raw",k,"AES-GCM",false,["decrypt"]);
-        const res = await crypto.subtle.decrypt({name:"AES-GCM",iv},sk,d);
+        const sk=await crypto.subtle.importKey("raw",k,"AES-GCM",false,["decrypt"]);
+        const res=await crypto.subtle.decrypt({name:"AES-GCM",iv},sk,d);
 
-        const decoded = dec.decode(res);
+        document.getElementById("input").value=dec.decode(res);
 
-        document.getElementById("input").value = decoded;
-
-        log("DECRYPT_SUCCESS","ok");
+        log("DECOMPILE_SUCCESS");
 
     }catch(e){
-        log("DECRYPT_FAIL","err");
+        log("DECOMPILE_FAIL");
     }
 }
 </script>
