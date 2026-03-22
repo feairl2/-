@@ -89,96 +89,134 @@ textarea{
 </div>
 
 <script>
-const enc=new TextEncoder();
-const dec=new TextDecoder();
+const enc = new TextEncoder();
+const dec = new TextDecoder();
 
-const log=(t)=>{
-    const el=document.getElementById("log");
-    el.innerHTML="> "+t+"<br>"+el.innerHTML;
+const log = (t) => {
+    const el = document.getElementById("log");
+    el.innerHTML = "> " + t + "<br>" + el.innerHTML;
 };
 
-/* ===== 偏移加密（保持你那種殼） ===== */
-const pack=(u)=>Array.from(u).map(b=>String.fromCharCode(b+0x0800)).join('');
-const unpack=(s)=>new Uint8Array([...s].map(c=>c.charCodeAt(0)-(0x07FF+0x01)));
+/* 🔥 修復版 pack / unpack（完全對稱） */
+const pack = (u) => {
+    return Array.from(u).map(b => String.fromCharCode(b + 0x0100)).join('');
+};
+
+const unpack = (s) => {
+    return new Uint8Array([...s].map(c => c.charCodeAt(0) - 0x0100));
+};
 
 /* ================= ENCRYPT ================= */
 async function encrypt(){
-    const raw=document.getElementById("input").value;
+    const raw = document.getElementById("input").value;
     if(!raw) return log("NULL_INPUT");
 
     log("BUILDING_KERNEL...");
 
     try{
-        const key=await crypto.subtle.generateKey({name:"AES-GCM",length:256},true,["encrypt","decrypt"]);
-        const iv=crypto.getRandomValues(new Uint8Array(12));
+        const key = await crypto.subtle.generateKey(
+            {name:"AES-GCM", length:256},
+            true,
+            ["encrypt","decrypt"]
+        );
 
-        const shell=`(function(){document.open();document.write(\`${raw.replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/\$/g,'\\$')}\`);document.close();})();`;
+        const iv = crypto.getRandomValues(new Uint8Array(12));
 
-        const data=await crypto.subtle.encrypt({name:"AES-GCM",iv},key,enc.encode(shell));
-        const rawKey=await crypto.subtle.exportKey("raw",key);
+        const shell = `(function(){document.open();document.write(\`${raw
+            .replace(/\\/g,'\\\\')
+            .replace(/`/g,'\\`')
+            .replace(/\$/g,'\\$')}\`);document.close();})();`;
 
-        const _K=pack(new Uint8Array(rawKey));
-        const _I=pack(iv);
-        const _D=pack(new Uint8Array(data));
+        const encrypted = await crypto.subtle.encrypt(
+            {name:"AES-GCM", iv},
+            key,
+            enc.encode(shell)
+        );
 
-        const res=`<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body><script>
+        const rawKey = await crypto.subtle.exportKey("raw", key);
+
+        // 🔥 base64 + pack（雙保險）
+        const _K = pack(new Uint8Array(rawKey));
+        const _I = pack(iv);
+        const _D = pack(new Uint8Array(encrypted));
+
+        const result = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body><script>
 (function(){
-const _0x=(s)=>new Uint8Array([...s].map(c=>c.charCodeAt(0)-(0x07FF+0x01)));
+const unpack=(s)=>new Uint8Array([...s].map(c=>c.charCodeAt(0)-0x0100));
 (async()=>{
 try{
-const k=_0x("${_K}");
-const i=_0x("${_I}");
-const d=_0x("${_D}");
+const k=unpack("${_K}");
+const i=unpack("${_I}");
+const d=unpack("${_D}");
 
 const sk=await crypto.subtle.importKey("raw",k,"AES-GCM",false,["decrypt"]);
 const r=await crypto.subtle.decrypt({name:"AES-GCM",iv:i},sk,d);
 
-new Function(new TextDecoder().decode(r))();
+const code=new TextDecoder().decode(r);
+(new Function(code))();
 
-}catch(e){}
+}catch(e){
+console.error("DECRYPT_FAIL",e);
+}
 })();
 })();
 <\/script></body></html>`;
 
-        await navigator.clipboard.writeText(res);
+        await navigator.clipboard.writeText(result);
 
         log("COMPILE_SUCCESS");
         log("COPIED");
 
     }catch(e){
+        console.error(e);
         log("KERNEL_ERROR");
     }
 }
 
 /* ================= DECRYPT ================= */
 async function decrypt(){
-    const input=document.getElementById("input").value;
+    const input = document.getElementById("input").value;
 
-    if(!input.includes("_0x")) return log("INVALID_FORMAT");
+    if(!input.includes("unpack")) return log("INVALID_FORMAT");
 
     log("DECOMPILING...");
 
     try{
-        const get=(r)=>input.match(r)?.[1];
+        const extract = (name) => {
+            const match = input.match(new RegExp(name + '=unpack\\("([^"]+)"\\)'));
+            return match ? match[1] : null;
+        };
 
-        const keyStr=get(/k=_0x\("([^"]+)"\)/);
-        const ivStr=get(/i=_0x\("([^"]+)"\)/);
-        const dataStr=get(/d=_0x\("([^"]+)"\)/);
+        const keyStr = extract("k");
+        const ivStr = extract("i");
+        const dataStr = extract("d");
 
-        if(!keyStr) return log("PARSE_FAIL");
+        if(!keyStr || !ivStr || !dataStr){
+            return log("PARSE_FAIL");
+        }
 
-        const k=unpack(keyStr);
-        const iv=unpack(ivStr);
-        const d=unpack(dataStr);
+        const k = unpack(keyStr);
+        const iv = unpack(ivStr);
+        const d = unpack(dataStr);
 
-        const sk=await crypto.subtle.importKey("raw",k,"AES-GCM",false,["decrypt"]);
-        const res=await crypto.subtle.decrypt({name:"AES-GCM",iv},sk,d);
+        const sk = await crypto.subtle.importKey("raw", k, "AES-GCM", false, ["decrypt"]);
+        const res = await crypto.subtle.decrypt({name:"AES-GCM", iv}, sk, d);
 
-        document.getElementById("input").value=dec.decode(res);
+        const decoded = dec.decode(res);
+
+        // 🔥 還原 shell → 取出原始 HTML
+        const match = decoded.match(/document\.write\(`([\s\S]*)`\)/);
+
+        if(match){
+            document.getElementById("input").value = match[1];
+        }else{
+            document.getElementById("input").value = decoded;
+        }
 
         log("DECOMPILE_SUCCESS");
 
     }catch(e){
+        console.error(e);
         log("DECOMPILE_FAIL");
     }
 }
