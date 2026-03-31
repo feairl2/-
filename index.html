@@ -97,39 +97,23 @@ const log = (t) => {
     el.innerHTML = "> " + t + "<br>" + el.innerHTML;
 };
 
-const OFFSET = Math.floor(Math.random() * 2000) + 300;
-
+/* 🔥 修復版 pack / unpack（完全對稱） */
 const pack = (u) => {
-    return OFFSET + "|" + Array.from(u)
-        .map((b,i)=>String.fromCharCode(b + OFFSET + (i % 7)))
-        .join('');
+    return Array.from(u).map(b => String.fromCharCode(b + 0x0100)).join('');
 };
 
 const unpack = (s) => {
-    const [off, data] = s.split("|");
-    const offset = parseInt(off);
-
-    return new Uint8Array([...data]
-        .map((c,i)=>c.charCodeAt(0) - offset - (i % 7)));
+    return new Uint8Array([...s].map(c => c.charCodeAt(0) - 0x0100));
 };
 
+/* ================= ENCRYPT ================= */
 async function encrypt(){
-
-    const minify = (html) => {
-    return html
-        .replace(/\r/g,'')
-        .replace(/\n/g,'');
-};
-
     const raw = document.getElementById("input").value;
     if(!raw) return log("NULL_INPUT");
 
     log("BUILDING_KERNEL...");
 
     try{
-
-        const compressed = minify(raw);
-
         const key = await crypto.subtle.generateKey(
             {name:"AES-GCM", length:256},
             true,
@@ -138,22 +122,10 @@ async function encrypt(){
 
         const iv = crypto.getRandomValues(new Uint8Array(12));
 
-        const shell = `(function(){
-const div=document.createElement("div");
-div.innerHTML=\`${compressed
-    .replace(/\\/g,'\\\\')
-    .replace(/`/g,'\\`')
-    .replace(/\$/g,'\\$')}\`;
-
-document.body.innerHTML="";
-document.body.appendChild(div);
-
-div.querySelectorAll("script").forEach(s=>{
-    const ns=document.createElement("script");
-    ns.textContent=s.textContent;
-    document.body.appendChild(ns);
-});
-})();`;
+        const shell = `(function(){document.open();document.write(\`${raw
+            .replace(/\\/g,'\\\\')
+            .replace(/`/g,'\\`')
+            .replace(/\$/g,'\\$')}\`);document.close();})();`;
 
         const encrypted = await crypto.subtle.encrypt(
             {name:"AES-GCM", iv},
@@ -163,42 +135,25 @@ div.querySelectorAll("script").forEach(s=>{
 
         const rawKey = await crypto.subtle.exportKey("raw", key);
 
+        // 🔥 base64 + pack（雙保險）
         const _K = pack(new Uint8Array(rawKey));
         const _I = pack(iv);
         const _D = pack(new Uint8Array(encrypted));
 
         const result = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body><script>
 (function(){
-
-document.addEventListener("keydown", e => {
-    if (
-        e.key === "F12" ||
-        (e.ctrlKey && e.shiftKey && ["I","J","C"].includes(e.key)) ||
-        (e.ctrlKey && e.key === "U")
-    ) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-    }
-});
-
-const unpack=(s)=>{
-const [off,data]=s.split("|");
-const offset=parseInt(off);
-return new Uint8Array([...data].map((c,i)=>c.charCodeAt(0)-offset-(i%7)));
-};
-
+const unpack=(s)=>new Uint8Array([...s].map(c=>c.charCodeAt(0)-0x0100));
 (async()=>{
 try{
-const _0x91=unpack("${_K}");
-const _0xA2=unpack("${_I}");
-const _0xF3=unpack("${_D}");
+const k=unpack("${_K}");
+const i=unpack("${_I}");
+const d=unpack("${_D}");
 
-const sk=await crypto.subtle.importKey("raw",_0x91,"AES-GCM",false,["decrypt"]);
-const r=await crypto.subtle.decrypt({name:"AES-GCM",iv:_0xA2},sk,_0xF3);
+const sk=await crypto.subtle.importKey("raw",k,"AES-GCM",false,["decrypt"]);
+const r=await crypto.subtle.decrypt({name:"AES-GCM",iv:i},sk,d);
 
 const code=new TextDecoder().decode(r);
-(function(f){f();})(new Function(code));
+(new Function(code))();
 
 }catch(e){
 console.error("DECRYPT_FAIL",e);
@@ -207,14 +162,7 @@ console.error("DECRYPT_FAIL",e);
 })();
 <\/script></body></html>`;
 
-        const final = result
-    .replace(/\n/g,'')
-    .replace(/\t/g,'')
-    .replace(/\s{2,}/g,' ')
-    .replace(/>\s+</g,'><')
-    .trim();
-
-await navigator.clipboard.writeText(final);
+        await navigator.clipboard.writeText(result);
 
         log("COMPILE_SUCCESS");
         log("COPIED");
@@ -224,10 +172,12 @@ await navigator.clipboard.writeText(final);
         log("KERNEL_ERROR");
     }
 }
+
+/* ================= DECRYPT ================= */
 async function decrypt(){
     const input = document.getElementById("input").value;
 
-    if(!input.includes("_0x91=unpack(")) return log("INVALID_FORMAT");
+    if(!input.includes("unpack")) return log("INVALID_FORMAT");
 
     log("DECOMPILING...");
 
@@ -237,9 +187,9 @@ async function decrypt(){
             return match ? match[1] : null;
         };
 
-        const keyStr = extract("_0x91");
-        const ivStr = extract("_0xA2");
-        const dataStr = extract("_0xF3");
+        const keyStr = extract("k");
+        const ivStr = extract("i");
+        const dataStr = extract("d");
 
         if(!keyStr || !ivStr || !dataStr){
             return log("PARSE_FAIL");
@@ -254,6 +204,7 @@ async function decrypt(){
 
         const decoded = dec.decode(res);
 
+        // 🔥 還原 shell → 取出原始 HTML
         const match = decoded.match(/document\.write\(`([\s\S]*)`\)/);
 
         if(match){
