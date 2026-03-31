@@ -140,10 +140,12 @@ async function encrypt(){
 
         const iv = crypto.getRandomValues(new Uint8Array(12));
 
-        const shell = `(function(){document.open();document.write(\`${compressed
-            .replace(/\\/g,'\\\\')
-            .replace(/`/g,'\\`')
-            .replace(/\$/g,'\\$')}\`);document.close();})();`;
+        const shell = `(function(){
+document.body.innerHTML=\`${compressed
+    .replace(/\\/g,'\\\\')
+    .replace(/`/g,'\\`')
+    .replace(/\$/g,'\\$')}\`;
+})();`;
 
         const encrypted = await crypto.subtle.encrypt(
             {name:"AES-GCM", iv},
