@@ -172,11 +172,17 @@ document.addEventListener("keydown", e => {
     }
 });
 
+let __dev = false;
+
 setInterval(() => {
-    if (window.outerWidth - window.innerWidth > 160) {
-        debugger;
+    const diff = window.outerWidth - window.innerWidth;
+
+    if (diff > 200 && !__dev) {
+        __dev = true;
+        console.clear();
+        document.body.innerHTML = "";
     }
-}, 300);
+}, 1000);
 
 const unpack=(s)=>{
 const [off,data]=s.split("|");
