@@ -116,12 +116,10 @@ const unpack = (s) => {
 async function encrypt(){
 
     const minify = (html) => {
-        return html
-            .replace(/\n/g,'')
-            .replace(/\s{2,}/g,' ')
-            .replace(/>\s+</g,'><')
-            .trim();
-    };
+    return html
+        .replace(/\r/g,'')
+        .replace(/\n/g,'');
+};
 
     const raw = document.getElementById("input").value;
     if(!raw) return log("NULL_INPUT");
