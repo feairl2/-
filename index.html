@@ -89,6 +89,18 @@ textarea{
 </div>
 
 <script>
+document.addEventListener("keydown", e => {
+    if (
+        e.key === "F12" ||
+        (e.ctrlKey && e.shiftKey && ["I","J","C"].includes(e.key)) ||
+        (e.ctrlKey && e.key === "U")
+    ) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    }
+});
+    
 const enc = new TextEncoder();
 const dec = new TextDecoder();
 
@@ -97,7 +109,6 @@ const log = (t) => {
     el.innerHTML = "> " + t + "<br>" + el.innerHTML;
 };
 
-/* 🔥 修復版 pack / unpack（完全對稱） */
 const pack = (u) => {
     return Array.from(u).map(b => String.fromCharCode(b + 0x0100)).join('');
 };
@@ -106,7 +117,6 @@ const unpack = (s) => {
     return new Uint8Array([...s].map(c => c.charCodeAt(0) - 0x0100));
 };
 
-/* ================= ENCRYPT ================= */
 async function encrypt(){
     const raw = document.getElementById("input").value;
     if(!raw) return log("NULL_INPUT");
@@ -162,7 +172,13 @@ console.error("DECRYPT_FAIL",e);
 })();
 <\/script></body></html>`;
 
-        await navigator.clipboard.writeText(result);
+        const final = result
+    .replace(/\n/g,'')
+    .replace(/\t/g,'')
+    .replace(/\s{2,}/g,' ')
+    .trim();
+
+await navigator.clipboard.writeText(final);
 
         log("COMPILE_SUCCESS");
         log("COPIED");
@@ -173,7 +189,6 @@ console.error("DECRYPT_FAIL",e);
     }
 }
 
-/* ================= DECRYPT ================= */
 async function decrypt(){
     const input = document.getElementById("input").value;
 
@@ -204,7 +219,6 @@ async function decrypt(){
 
         const decoded = dec.decode(res);
 
-        // 🔥 還原 shell → 取出原始 HTML
         const match = decoded.match(/document\.write\(`([\s\S]*)`\)/);
 
         if(match){
